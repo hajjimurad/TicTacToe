@@ -28,7 +28,6 @@
 			<div id="t1" ng-click="setState($event)">{{showState(state.t1)}}</div>
 			<div id="t2" ng-click="setState($event)">{{showState(state.t2)}}</div>
 			<div id="t3" ng-click="setState($event)">{{showState(state.t3)}}</div>
-
 			<div id="t4" ng-click="setState($event)">{{showState(state.t4)}}</div>
 			<div id="t5" ng-click="setState($event)">{{showState(state.t5)}}</div>
 			<div id="t6" ng-click="setState($event)">{{showState(state.t6)}}</div>
@@ -39,17 +38,13 @@
 		</div>
 		<script type="text/javascript">
 		var GameController = function($scope) {
+			//--- game starts with cross
 			var isCross = 1;
-			//--- initial state
-			$scope.state = [ { t1: null },
-               				 { t2: null },
-               				 { t3: null },
-               				 { t4: null },
-               				 { t5: null },
-               				 { t6: null },
-               				 { t7: null },
-               				 { t8: null },
-               				 { t9: null }];
+			//--- model initial state
+			$scope.state = [];
+			 for(var i=1;i<10;i++) {
+			 	$scope.state["t"+i] = null;
+			 }
             //---   				     
 			$scope.setState = function(cell) {
 				//--- retrieve cell id
