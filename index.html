@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Tic Tac Toe</title>
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.2/united/bootstrap.min.css" />
+		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.js"></script>
+	</head>
+	<body ng-app>
+		<style type="text/css">
+			.game{
+				margin: 40px auto;
+				border: solid 1px red;
+				width: 382px;
+				padding: 10px;
+				overflow: auto;
+			}
+			.game div{
+				margin: 10px;
+				width: 100px;
+				height: 100px;
+				float: left;
+				border: solid 1px #000;
+				font-size: 60px;
+				text-align: center;
+			}
+		</style>
+		<div class="game" ng-controller="GameController" ng-model="state">
+			<div id="t1" ng-click="setState($event)">{{showState(state.t1)}}</div>
+			<div id="t2" ng-click="setState($event)">{{showState(state.t2)}}</div>
+			<div id="t3" ng-click="setState($event)">{{showState(state.t3)}}</div>
+
+			<div id="t4" ng-click="setState($event)">{{showState(state.t4)}}</div>
+			<div id="t5" ng-click="setState($event)">{{showState(state.t5)}}</div>
+			<div id="t6" ng-click="setState($event)">{{showState(state.t6)}}</div>
+
+			<div id="t7" ng-click="setState($event)">{{showState(state.t7)}}</div>
+			<div id="t8" ng-click="setState($event)">{{showState(state.t8)}}</div>
+			<div id="t9" ng-click="setState($event)">{{showState(state.t9)}}</div>
+		</div>
+		<script type="text/javascript">
+		var GameController = function($scope) {
+			var isCross = 1;
+			//--- initial state
+			$scope.state = [ { t1: null },
+               				 { t2: null },
+               				 { t3: null },
+               				 { t4: null },
+               				 { t5: null },
+               				 { t6: null },
+               				 { t7: null },
+               				 { t8: null },
+               				 { t9: null }];
+            //---   				     
+			$scope.setState = function(cell) {
+				//--- retrieve cell id
+				var cellId = cell.target.attributes.id.value;
+				//--- update cell with new status
+				if(typeof $scope.state[cellId] != "number") {
+					$scope.state[cellId] = isCross;
+					isCross = (isCross + 1) % 2;
+				}
+			}
+			$scope.showState = function(stateNum) {
+				if(stateNum == 0) return "0";
+				if(stateNum == 1) return "X";
+			}
+		}
+	</script>
+	</body>
+</html>
