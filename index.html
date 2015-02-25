@@ -7,57 +7,121 @@
 	</head>
 	<body ng-app>
 		<style type="text/css">
-			.game{
+			table.game {
 				margin: 40px auto;
-				border: solid 1px red;
-				width: 382px;
-				padding: 10px;
-				overflow: auto;
+				border-collapse: collapse;
 			}
-			.game div{
-				margin: 10px;
+			table.game td{
 				width: 100px;
 				height: 100px;
-				float: left;
-				border: solid 1px #000;
+				border-top: solid 1px #000;
+				border-left: solid 1px #000;
 				font-size: 60px;
 				text-align: center;
 			}
+			.game td:first-child
+			{	
+				border-left: none;
+			}
+			.game tr:first-child td
+			{
+				border-top: none;
+			}
 		</style>
-		<div class="game" ng-controller="GameController" ng-model="state">
-			<div id="t1" ng-click="setState($event)">{{showState(state.t1)}}</div>
-			<div id="t2" ng-click="setState($event)">{{showState(state.t2)}}</div>
-			<div id="t3" ng-click="setState($event)">{{showState(state.t3)}}</div>
-			<div id="t4" ng-click="setState($event)">{{showState(state.t4)}}</div>
-			<div id="t5" ng-click="setState($event)">{{showState(state.t5)}}</div>
-			<div id="t6" ng-click="setState($event)">{{showState(state.t6)}}</div>
-
-			<div id="t7" ng-click="setState($event)">{{showState(state.t7)}}</div>
-			<div id="t8" ng-click="setState($event)">{{showState(state.t8)}}</div>
-			<div id="t9" ng-click="setState($event)">{{showState(state.t9)}}</div>
-		</div>
+		<table class="game" ng-controller="GameController" ng-model="state">
+			<tr>
+				<td id="t1" ng-click="setState($event)">{{showState(state.t1)}}</td>
+				<td id="t2" ng-click="setState($event)">{{showState(state.t2)}}</td>
+				<td id="t3" ng-click="setState($event)">{{showState(state.t3)}}</td>
+			</tr>
+			<tr>
+				<td id="t4" ng-click="setState($event)">{{showState(state.t4)}}</td>
+				<td id="t5" ng-click="setState($event)">{{showState(state.t5)}}</td>
+				<td id="t6" ng-click="setState($event)">{{showState(state.t6)}}</td>
+			</tr>
+			<tr>
+				<td id="t7" ng-click="setState($event)">{{showState(state.t7)}}</td>
+				<td id="t8" ng-click="setState($event)">{{showState(state.t8)}}</td>
+				<td id="t9" ng-click="setState($event)">{{showState(state.t9)}}</td>
+			</tr>
+		</table> 
 		<script type="text/javascript">
 		var GameController = function($scope) {
-			//--- game starts with cross
-			var isCross = 1;
-			//--- model initial state
-			$scope.state = [];
-			 for(var i=1;i<10;i++) {
-			 	$scope.state["t"+i] = null;
-			 }
+			var winSums = [7, 56, 448, 73, 146, 292, 273, 84];
+			var isCross;
+			//---
+			$scope.init = function() {
+				console.log("init");
+				//--- game starts with cross
+				var before = isCross;
+				isCross = 1;
+				//--- model initial state
+				$scope.state = [];
+				 for(var i=1; i<10; i++) {
+				 	$scope.state["t"+i] = null;
+			 	};
+			}
+			//---
+			$scope.init();
             //---   				     
 			$scope.setState = function(cell) {
 				//--- retrieve cell id
 				var cellId = cell.target.attributes.id.value;
 				//--- update cell with new status
-				if(typeof $scope.state[cellId] != "number") {
+				if($scope.isCellEmpty(cellId)) {
 					$scope.state[cellId] = isCross;
+					//--- check if won
+					if($scope.ifWin(isCross)) {
+						alert('Win of user ' + $scope.showState(isCross) + '!');
+						$scope.init();
+						return;
+					}
+					//--- check if game finished
+					if($scope.isFinished()) {
+						alert('Nobody won!');
+						$scope.init();
+						return;
+					}
+					//--- change the turn to another user
 					isCross = (isCross + 1) % 2;
 				}
+				
 			}
+			$scope.isCellEmpty = function(index) {
+				return typeof $scope.state[index] != "number";
+			}
+			//--- data to view
 			$scope.showState = function(stateNum) {
-				if(stateNum == 0) return "0";
-				if(stateNum == 1) return "X";
+				if(stateNum == 0) return "❍";
+				if(stateNum == 1) return "✘";
+			}
+			//--- checks if current player won
+			$scope.ifWin = function(isCross) {
+				//--- calculate sum of current elements
+				var tempSum = 0; 
+				for(var i=1;i<10;i++) {
+			 		if(!$scope.isCellEmpty("t"+i)) {
+		 				if($scope.state["t"+i] == isCross) {
+		 					tempSum |= Math.pow(2,i-1);
+		 				}
+			 		}
+			 	}
+		 		//--- ... and compare it with one of the sums
+		 		for(var s=0;s<winSums.length;s++) {
+		 			if((winSums[s] & tempSum) == winSums[s])
+		 				return true;
+		 		}
+		 		//---
+		 		return false;
+			}
+			//-- checks whether cells with empty data exists
+			$scope.isFinished = function() {
+				for(var i=1;i<10;i++) {
+			 		if($scope.isCellEmpty("t"+i)) {
+			 			return false;		 				
+			 		}
+			 	}
+			 	return true;
 			}
 		}
 	</script>
