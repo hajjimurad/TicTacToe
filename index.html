@@ -121,24 +121,36 @@
 			$scope.computerRun = function(isCross) {
 				var chosen;
 				var emptyPositions = [];
-				//--- go through empty cells
+				//--- 'IF CAN WIN THEN GO THERE'
 				for(var i=1;i<10;i++) {
 					if($scope.isCellEmpty("t"+i)) {
 						//--- check if computer can win
 						if($scope.ifWin(isCross, i)) {
 							$scope.setState("t"+i,isCross);
 							chosen = true;
-							console.log("choose to win");
+							console.log("choose, because I can win");
 							break;
 						}
 						emptyPositions.push(i);
 					}
 				}
+				//--- 'IF OPPONENT CAN WIN NEXT STEP THEN GO THERE'
+				for(var i=1;i<10;i++) {
+					if($scope.isCellEmpty("t"+i)) {
+						//--- check if computer can win
+						if($scope.ifWin((isCross + 1) % 2, i)) {
+							$scope.setState("t"+i,isCross);
+							chosen = true;
+							console.log("choose, because opponent can win");
+							break;
+						}
+					}
+				}
 				//--- choose random if no cell selected
 				if(!chosen) {
 					var random = $scope.getRand(1,emptyPositions.length);
-					$scope.setState("t"+emptyPositions[random-1],isCross);
-					console.log("rand: " + emptyPositions[random-1] + " at " + random + "/" + emptyPositions.length);
+					$scope.setState("t" + emptyPositions[random-1],isCross);
+					console.log("rand: " + emptyPositions[random-1]);
 				}
 			}
 			$scope.getRand = function(min,max) {
