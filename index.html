@@ -99,20 +99,21 @@
 				if($scope.ifWin(true)) {
 					$scope.resultMessage = 'Win of user ' + $scope.showState(true) + '!';
 					//---
-					return;
+					return true;
 				}
-
 				//--- check if won 0
 				if($scope.ifWin(false)) {
 					$scope.resultMessage = 'Win of user ' + $scope.showState(false) + '!';
 					//---
-					return;
+					return true;
 				}
 				//--- check if game finished
 				if($scope.ifNoPlaceToGo()) {
 					$scope.resultMessage = 'Nobody won!';;
-					return;
+					return true;
 				}
+				//---
+				return false;
 			}
 			$scope.setState = function(cellId, isCross) {
 				$scope.state[cellId] = isCross;
@@ -127,6 +128,7 @@
 						if($scope.ifWin(isCross, i)) {
 							$scope.setState("t"+i,isCross);
 							chosen = true;
+							console.log("choose to win");
 							break;
 						}
 						emptyPositions.push(i);
@@ -135,7 +137,8 @@
 				//--- choose random if no cell selected
 				if(!chosen) {
 					var random = $scope.getRand(1,emptyPositions.length);
-					$scope.setState("t"+emptyPositions[random],isCross);
+					$scope.setState("t"+emptyPositions[random-1],isCross);
+					console.log("rand: " + emptyPositions[random-1] + " at " + random + "/" + emptyPositions.length);
 				}
 			}
 			$scope.getRand = function(min,max) {
