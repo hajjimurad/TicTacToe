@@ -37,8 +37,12 @@
 		//--- entry point for game
 		var GameController = function($scope) {
 			var winSums = [7, 56, 448, 73, 146, 292, 273, 84];
+			var anglePositions = [0,2,6,8];
+			var centralPosition = 4;
 			var isCross;
 			var resetRequired = false;
+			var computerStrategy = null;
+			var stepCounter = 0;
 			//---
 			$scope.init = function() {
 				$scope.resultMessage = "";
@@ -71,6 +75,8 @@
 						return;
 					}
 					//---
+					stepCounter++;
+					//---
 					$scope.computerRun((isCross + 1) % 2);
 					//---
 					if($scope.isGameFinished()) {
@@ -82,13 +88,13 @@
 			$scope.isGameFinished = function() {
 				//--- check if won X
 				if($scope.ifWin(0)) {
-					$scope.resultMessage = 'Win of user \'0\'!';
+					$scope.resultMessage = '⭐ Win of user \'0\' ⭐';
 					//---
 					return true;
 				}
 				//--- check if won 0
 				if($scope.ifWin(1)) {
-					$scope.resultMessage = 'Win of user \'X\'!';
+					$scope.resultMessage = '⭐ Win of user \'X\' ⭐';
 					//---
 					return true;
 				}
@@ -109,7 +115,7 @@
 				//---
 				var chosen = false;
 				var emptyPositions = [];
-				//--- 'IF CAN WIN THEN GO THERE'
+				//--- 'IF I CAN WIN THEN WIN'
 				for(var i=0;i<9;i++) {
 					if($scope.states[i].state == null) {
 						//--- check if computer can win
@@ -124,7 +130,7 @@
 				}
 				if(chosen)
 					return;
-				//--- 'IF OPPONENT CAN WIN NEXT STEP THEN GO THERE'
+				//--- 'IF OPPONENT CAN WIN AT NEXT STEP THEN GO THERE'
 				var opponentSymbol = (isCross + 1) % 2;
 				for(var i=0;i<9;i++) {
 					if($scope.states[i].state == null) {
@@ -132,9 +138,35 @@
 						if($scope.ifWin(opponentSymbol, i)) {
 							console.log("choose '" + i + "', because opponent can win");
 							$scope.states[i].state = isCross;
-							chosen = true;							
+							chosen = true;				
 							break;
 						}
+					}
+				}
+				if(chosen)
+					return;
+				//--- choose strategy
+				if(!computerStrategy) {
+					if(stepCounter == 1) {
+						if($scope.states[centralPosition].state == 1) {
+							computerStrategy = 1;
+						}
+					}
+
+				}
+				//--- act by selected strategy
+				if(computerStrategy == 1) {
+					//--- choose any angle cell or random
+					var anglePos = $scope.getFirstFreeAnglePosition();
+					if(anglePos != null) {
+						console.log("choose '" + anglePos+ "', because opponent get center first");
+						$scope.states[anglePos].state = isCross;
+						chosen = true;
+					} else {
+						var anyFreePosition = $scope.getAnyFreePosition();
+						console.log("choose '" + anglePos+ "', because opponent get center first and angle positions are not free");
+						$scope.states[anyFreePosition].state = isCross;
+						chosen = true;
 					}
 				}
 				if(chosen)
@@ -145,6 +177,22 @@
 					$scope.states[emptyPositions[random]].state = isCross;
 					console.log("choose rand: " + emptyPositions[random]);
 				}
+			}
+			$scope.getFirstFreeAnglePosition = function() {
+				for(var i=0;i<anglePositions.length;i++) {
+					if($scope.states[anglePositions[i]].state == null) {
+						return anglePositions[i];
+					}
+				}
+				return null;
+			}
+			$scope.getAnyFreePosition = function() {
+				for(var i=0;i<9;i++) {
+					if($scope.states[i].state == null) {
+						return i;
+					}
+				}
+				return null;
 			}
 			$scope.getRand = function(min,max) {
 				return Math.floor(Math.random() * (max - min + 1)) + min;
