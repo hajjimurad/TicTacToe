@@ -11,7 +11,7 @@
 				margin: 40px auto;
 				border-collapse: collapse;
 			}
-			table.game td{
+			table.game td {
 				width: 100px;
 				height: 100px;
 				border-top: solid 1px #000;
@@ -28,30 +28,34 @@
 				border-top: none;
 			}
 		</style>
-		<table class="game" ng-controller="GameController" ng-model="state">
-			<tr>
-				<td id="t1" ng-click="setState($event)">{{showState(state.t1)}}</td>
-				<td id="t2" ng-click="setState($event)">{{showState(state.t2)}}</td>
-				<td id="t3" ng-click="setState($event)">{{showState(state.t3)}}</td>
-			</tr>
-			<tr>
-				<td id="t4" ng-click="setState($event)">{{showState(state.t4)}}</td>
-				<td id="t5" ng-click="setState($event)">{{showState(state.t5)}}</td>
-				<td id="t6" ng-click="setState($event)">{{showState(state.t6)}}</td>
-			</tr>
-			<tr>
-				<td id="t7" ng-click="setState($event)">{{showState(state.t7)}}</td>
-				<td id="t8" ng-click="setState($event)">{{showState(state.t8)}}</td>
-				<td id="t9" ng-click="setState($event)">{{showState(state.t9)}}</td>
-			</tr>
-		</table> 
+		<div ng-controller="GameController" ng-model="state">
+			<table class="game">
+				<tr>
+					<td id="t1" ng-click="onUserRun($event)">{{showState(state.t1)}}</td>
+					<td id="t2" ng-click="onUserRun($event)">{{showState(state.t2)}}</td>
+					<td id="t3" ng-click="onUserRun($event)">{{showState(state.t3)}}</td>
+				</tr>
+				<tr>
+					<td id="t4" ng-click="onUserRun($event)">{{showState(state.t4)}}</td>
+					<td id="t5" ng-click="onUserRun($event)">{{showState(state.t5)}}</td>
+					<td id="t6" ng-click="onUserRun($event)">{{showState(state.t6)}}</td>
+				</tr>
+				<tr>
+					<td id="t7" ng-click="onUserRun($event)">{{showState(state.t7)}}</td>
+					<td id="t8" ng-click="onUserRun($event)">{{showState(state.t8)}}</td>
+					<td id="t9" ng-click="onUserRun($event)">{{showState(state.t9)}}</td>
+				</tr>
+			</table>
+			<h3 style="text-align: center">{{resultMessage}}</h3>
+		</div>
 		<script type="text/javascript">
 		var GameController = function($scope) {
 			var winSums = [7, 56, 448, 73, 146, 292, 273, 84];
 			var isCross;
+			var resetRequired = false;
 			//---
 			$scope.init = function() {
-				console.log("init");
+				$scope.resultMessage = "";
 				//--- game starts with cross
 				var before = isCross;
 				isCross = 1;
@@ -64,28 +68,78 @@
 			//---
 			$scope.init();
             //---   				     
-			$scope.setState = function(cell) {
+			$scope.onUserRun = function(cell) {
+				//--- game is finished
+				if(resetRequired) {
+					resetRequired = false;
+					$scope.init();
+				}
 				//--- retrieve cell id
 				var cellId = cell.target.attributes.id.value;
-				//--- update cell with new status
+				//---
 				if($scope.isCellEmpty(cellId)) {
-					$scope.state[cellId] = isCross;
-					//--- check if won
-					if($scope.ifWin(isCross)) {
-						alert('Win of user ' + $scope.showState(isCross) + '!');
-						$scope.init();
+					//--- update cell with new status
+					$scope.setState(cellId,isCross);
+					//--- check is result received
+					if($scope.isGameFinished()) {
+						resetRequired = true;
 						return;
 					}
-					//--- check if game finished
-					if($scope.isFinished()) {
-						alert('Nobody won!');
-						$scope.init();
+					//---
+					$scope.computerRun((isCross + 1) % 2);
+					//---
+					if($scope.isGameFinished()) {
+						resetRequired = true;
 						return;
 					}
-					//--- change the turn to another user
-					isCross = (isCross + 1) % 2;
+				}				
+			}
+			$scope.isGameFinished = function() {
+				//--- check if won X
+				if($scope.ifWin(true)) {
+					$scope.resultMessage = 'Win of user ' + $scope.showState(true) + '!';
+					//---
+					return;
 				}
-				
+
+				//--- check if won 0
+				if($scope.ifWin(false)) {
+					$scope.resultMessage = 'Win of user ' + $scope.showState(false) + '!';
+					//---
+					return;
+				}
+				//--- check if game finished
+				if($scope.ifNoPlaceToGo()) {
+					$scope.resultMessage = 'Nobody won!';;
+					return;
+				}
+			}
+			$scope.setState = function(cellId, isCross) {
+				$scope.state[cellId] = isCross;
+			}
+			$scope.computerRun = function(isCross) {
+				var chosen;
+				var emptyPositions = [];
+				//--- go through empty cells
+				for(var i=1;i<10;i++) {
+					if($scope.isCellEmpty("t"+i)) {
+						//--- check if computer can win
+						if($scope.ifWin(isCross, i)) {
+							$scope.setState("t"+i,isCross);
+							chosen = true;
+							break;
+						}
+						emptyPositions.push(i);
+					}
+				}
+				//--- choose random if no cell selected
+				if(!chosen) {
+					var random = $scope.getRand(1,emptyPositions.length);
+					$scope.setState("t"+emptyPositions[random],isCross);
+				}
+			}
+			$scope.getRand = function(min,max) {
+				return Math.floor(Math.random() * (max - min + 1)) + min;
 			}
 			$scope.isCellEmpty = function(index) {
 				return typeof $scope.state[index] != "number";
@@ -96,7 +150,7 @@
 				if(stateNum == 1) return "✘";
 			}
 			//--- checks if current player won
-			$scope.ifWin = function(isCross) {
+			$scope.ifWin = function(isCross,futurePosition) {
 				//--- calculate sum of current elements
 				var tempSum = 0; 
 				for(var i=1;i<10;i++) {
@@ -105,6 +159,10 @@
 		 					tempSum |= Math.pow(2,i-1);
 		 				}
 			 		}
+			 	}
+			 	//--- if future position specified then take it into consideration too
+			 	if(futurePosition) {
+			 		tempSum |= Math.pow(2,futurePosition-1);
 			 	}
 		 		//--- ... and compare it with one of the sums
 		 		for(var s=0;s<winSums.length;s++) {
@@ -115,7 +173,7 @@
 		 		return false;
 			}
 			//-- checks whether cells with empty data exists
-			$scope.isFinished = function() {
+			$scope.ifNoPlaceToGo = function() {
 				for(var i=1;i<10;i++) {
 			 		if($scope.isCellEmpty("t"+i)) {
 			 			return false;		 				
