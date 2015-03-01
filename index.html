@@ -11,6 +11,7 @@
 				width: 302px;
 				margin: 20px auto;
 				overflow: hidden;
+				font-family: u2400;
 			}
 			.game div {
 				width: 100px; 
@@ -47,7 +48,7 @@
 			var prevOpponentPosition;
 			var firstOpponentPosition;
 			//---
-			$scope.init = function() {
+			var init = function() {
 				$scope.gameResult = null;
 				//--- game starts with cross
 				var before = isCross;
@@ -59,13 +60,35 @@
 			 	};
 			}
 			//---
-			$scope.init();
+			init();
+			//--- data to view
+			$scope.showState = function(item) {
+				if(item.state  == 0) return "⭕";
+				if(item.state == 1) return "❌";
+			}
+			//--- shows game result
+			$scope.showResult = function(gameResult) {
+				switch(gameResult) {
+					case 0:
+						return 'Nobody won!';
+					break;
+					case 1:
+						return '⭐ Win of user \'X\' ⭐';
+					break;
+					case 2:
+						return '⭐ Win of user \'O\' ⭐';
+					break;
+					default:
+						return null;
+					break;
+				}
+			}
             //---   				     
 			$scope.onUserRun = function(item, index) {
 				//--- game is finished
 				if(resetRequired) {
 					resetRequired = false;
-					$scope.init();
+					init();
 					return;
 				}
 				//---
@@ -73,7 +96,7 @@
 					//--- update cell with new status
 					item.state = isCross;
 					//--- check is result received
-					if($scope.isGameFinished()) {
+					if(isGameFinished()) {
 						resetRequired = true;
 						return;
 					}
@@ -85,49 +108,43 @@
 						firstOpponentPosition = index;
 					}
 					//---
-					$scope.computerRun((isCross + 1) % 2);
+					computerRun((isCross + 1) % 2);
 					//---
-					if($scope.isGameFinished()) {
+					if(isGameFinished()) {
 						resetRequired = true;
 						return;
 					}
 				}				
 			}
-			$scope.isGameFinished = function() {
+			var isGameFinished = function() {
 				//--- check if won X
-				if($scope.ifWin(0)) {
+				if(ifWin(0)) {
 					$scope.gameResult = 2;
 					//---
 					return true;
 				}
 				//--- check if won 0
-				if($scope.ifWin(1)) {
+				if(ifWin(1)) {
 					$scope.gameResult = 1;
 					//---
 					return true;
 				}
 				//--- check if game finished
-				if($scope.ifNoPlaceToGo()) {
+				if(ifNoPlaceToGo()) {
 					$scope.gameResult = 0;
 					return true;
 				}
 				//---
 				return false;
 			}
-			$scope.computerRun = function(isCross) {
-				// var statesTogether = "";
-				// for(var i=0;i<9;i++) {
-				// 	statesTogether += $scope.states[i].state + ",";
-				// }
-				// console.log(statesTogether);
-				//---
+			var computerRun = function(isCross) {
 				var chosen = false;
 				var emptyPositions = [];
 				//--- 'IF I CAN WIN THEN WIN'
 				for(var i=0;i<9;i++) {
 					if($scope.states[i].state == null) {
 						//--- check if computer can win
-						if($scope.ifWin(isCross, i)) {
+						if(ifWin(isCross, i)) {
 							console.log("choose '" + i + "', because I can win");
 							$scope.states[i].state = isCross;
 							chosen = true;							
@@ -143,7 +160,7 @@
 				for(var i=0;i<9;i++) {
 					if($scope.states[i].state == null) {
 						//--- check if opponent can win
-						if($scope.ifWin(opponentSymbol, i)) {
+						if(ifWin(opponentSymbol, i)) {
 							console.log("choose '" + i + "', because opponent can win");
 							$scope.states[i].state = isCross;
 							chosen = true;				
@@ -159,10 +176,10 @@
 						if($scope.states[centralPosition].state == 1) {
 							computerStrategy = 1;
 						}
-						else if($scope.isAnglePosition(opponentSymbol, prevOpponentPosition)) {
+						else if(isAnglePosition(opponentSymbol, prevOpponentPosition)) {
 							computerStrategy = 2;
 						}
-						else if($scope.isSidePosition(opponentSymbol, prevOpponentPosition)) {
+						else if(isSidePosition(opponentSymbol, prevOpponentPosition)) {
 							computerStrategy = 3;
 						}
 					}
@@ -170,13 +187,13 @@
 				//--- act by selected strategy
 				if(computerStrategy == 1) {
 					//--- choose any angle cell or random
-					var anglePos = $scope.getFirstFreeAnglePosition();
+					var anglePos = getFirstFreeAnglePosition();
 					if(anglePos != null) {
 						console.log("choose '" + anglePos+ "', because opponent get center first (strategy 1)");
 						$scope.states[anglePos].state = isCross;
 						chosen = true;
 					} else {
-						var anyFreePosition = $scope.getFirstFree();
+						var anyFreePosition = getFirstFree();
 						console.log("choose '" + anglePos+ "', because opponent get center first and angle positions are not free (strategy 1)");
 						$scope.states[anyFreePosition].state = isCross;
 						chosen = true;
@@ -188,10 +205,10 @@
 						chosen = true;
 					} else if (stepCounter == 2) {
 						//--- find opposite position
-						var oppositePositions = $scope.getPositionOpposite(firstOpponentPosition);
+						var oppositePositions = getPositionOpposite(firstOpponentPosition);
 						if($scope.states[oppositePositions].state != null) {
 							//--- opposite position is used => find any at side
-							var positionAtSide = $scope.getFirstFreeAtSide();
+							var positionAtSide = getFirstFreeAtSide();
 							console.log("choose '" + positionAtSide+ "', because second step, at side (strategy 2)");
 							$scope.states[positionAtSide].state = isCross;
 							chosen = true;
@@ -210,17 +227,17 @@
 					} else if(stepCounter == 2) {
 						var tempPos;
 						//----
-						if($scope.isAnglePosition(opponentSymbol, prevOpponentPosition)) {
-							var oppositePosition = $scope.getPositionOpposite(prevOpponentPosition);
+						if(isAnglePosition(opponentSymbol, prevOpponentPosition)) {
+							var oppositePosition = getPositionOpposite(prevOpponentPosition);
 							console.log("choose '" + oppositePosition+ "', because second step was at angle " + prevOpponentPosition + " (strategy 3.1)");
 							$scope.states[oppositePosition].state = isCross;
 							chosen = true;
-						} else if($scope.getPositionOpposite(prevOpponentPosition) == firstOpponentPosition) {
-							var firstFreeAnglePosition = $scope.getFirstFreeAnglePosition();
+						} else if(getPositionOpposite(prevOpponentPosition) == firstOpponentPosition) {
+							var firstFreeAnglePosition = getFirstFreeAnglePosition();
 							console.log("choose '" + firstFreeAnglePosition+ "', because second step was at opposite to the first side (strategy 3.2)");
 							$scope.states[firstFreeAnglePosition].state = isCross;
 							chosen = true;
-						} else if($scope.ifPositionNearAndAtSideToTheFirst(opponentSymbol,prevOpponentPosition,firstOpponentPosition, function(pos) { tempPos = pos})) {
+						} else if(ifPositionNearAndAtSideToTheFirst(opponentSymbol,prevOpponentPosition,firstOpponentPosition, function(pos) { tempPos = pos})) {
 							console.log("choose '" + tempPos+ "', because second step was near at side (strategy 3.3)");
 							$scope.states[tempPos].state = isCross;
 							chosen = true;
@@ -232,16 +249,16 @@
 					return;
 				//--- choose random if no cell selected
 				if(emptyPositions.length > 0) {
-					var firstFree = $scope.getFirstFree();
+					var firstFree = getFirstFree();
 					$scope.states[firstFree].state = isCross;
 					console.log("choose first free!!!");
 				}
 			}
-			$scope.ifPositionNearAndAtSideToTheFirst = function(isCross, position, firstPosition, callback) {
+			var ifPositionNearAndAtSideToTheFirst = function(isCross, position, firstPosition, callback) {
 				if(!callback)
 					return null;
 				//---
-				if(!$scope.isSidePosition(isCross,position)) {
+				if(!isSidePosition(isCross,position)) {
 					throw "position is not side to check if both are neighbours";
 				}
 				switch(position) {
@@ -265,7 +282,7 @@
 				//---
 				return false;
 			}
-			$scope.getPositionOpposite = function(sourcePosition) {
+			var getPositionOpposite = function(sourcePosition) {
 				if(sourcePosition == undefined) {
 					throw "invalid position specified to get opposite, undefined";
 				}
@@ -278,7 +295,7 @@
 				var oppositeY = 2 - y;
 				return oppositeY * 3 + oppositeX;
 			}
-			$scope.getFirstFreeAtSide = function() {
+			var getFirstFreeAtSide = function() {
 				for(var i=0;i<sidePositions.length;i++) {
 					if($scope.states[sidePositions[i]].state == null) {
 						return sidePositions[i];
@@ -286,7 +303,7 @@
 				}
 				return null;
 			}
-			$scope.getFirstFreeAnglePosition = function() {
+			var getFirstFreeAnglePosition = function() {
 				for(var i=0;i<anglePositions.length;i++) {
 					if($scope.states[anglePositions[i]].state == null) {
 						return anglePositions[i];
@@ -294,7 +311,7 @@
 				}
 				return null;
 			}
-			$scope.getFirstFree = function() {
+			var getFirstFree = function() {
 				for(var i=0;i<9;i++) {
 					if($scope.states[i].state == null) {
 						return i;
@@ -302,7 +319,7 @@
 				}
 				return null;
 			}
-			$scope.isAnglePosition = function(isCross, position) {
+			var isAnglePosition = function(isCross, position) {
 				for(var i=0;i<anglePositions.length;i++) {
 					if(position == anglePositions[i] && $scope.states[anglePositions[i]].state == isCross) {
 						return true;
@@ -310,7 +327,7 @@
 				}
 				return false;
 			}
-			$scope.isSidePosition = function(isCross, position) {
+			var isSidePosition = function(isCross, position) {
 				for(var i=0;i<sidePositions.length;i++) {
 					if(position== sidePositions[i] && $scope.states[sidePositions[i]].state == isCross) {
 						return true;
@@ -319,7 +336,7 @@
 				return false;
 			}
 			//--- checks if current player won
-			$scope.ifWin = function(isCross,futurePosition) {
+			var ifWin = function(isCross,futurePosition) {
 				//--- calculate sum of current elements
 				var tempSum = 0; 
 				for(var i=0;i<9;i++) {
@@ -340,35 +357,13 @@
 		 		return false;
 			}
 			//-- checks whether cells with empty data exists
-			$scope.ifNoPlaceToGo = function() {
+			var ifNoPlaceToGo = function() {
 				for(var i=0;i<9;i++) {
 			 		if($scope.states[i].state == null) {
 			 			return false;		 				
 			 		}
 			 	}
 			 	return true;
-			}
-			//--- data to view
-			$scope.showState = function(item) {
-				if(item.state  == 0) return "⭕";
-				if(item.state == 1) return "❌";
-			}
-			//--- shows game result
-			$scope.showResult = function(gameResult) {
-				switch(gameResult) {
-					case 0:
-						return 'Nobody won!';
-					break;
-					case 1:
-						return '⭐ Win of user \'X\' ⭐';
-					break;
-					case 2:
-						return '⭐ Win of user \'O\' ⭐';
-					break;
-					default:
-						return null;
-					break;
-				}
 			}
 		}
 	</script>
