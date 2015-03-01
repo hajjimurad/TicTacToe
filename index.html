@@ -27,26 +27,28 @@
 		</style>
 		<div ng-controller="GameController" ng-model="state">
 			<div class="game">
-				<div ng-repeat="item in states" ng-click="onUserRun(item)">
+				<div ng-repeat="item in states" ng-click="onUserRun(item, $index)">
 					{{showState(item)}}
 				</div>
 			</div>
-			<h3 class="result">{{resultMessage}}</h3>
+			<h3 class="result">{{showResult(gameResult)}}</h3>
 		</div>
 		<script type="text/javascript">
 		//--- entry point for game
 		var GameController = function($scope) {
 			var winSums = [7, 56, 448, 73, 146, 292, 273, 84];
 			var anglePositions = [0,2,6,8];
+			var sidePositions = [1,3,5,7];
 			var centralPosition = 4;
 			var isCross;
 			var resetRequired = false;
 			var computerStrategy = null;
 			var stepCounter = 0;
-			var savedFirstPositionAtStrategy2;
+			var prevOpponentPosition;
+			var firstOpponentPosition;
 			//---
 			$scope.init = function() {
-				$scope.resultMessage = "";
+				$scope.gameResult = null;
 				//--- game starts with cross
 				var before = isCross;
 				isCross = 1;
@@ -59,7 +61,7 @@
 			//---
 			$scope.init();
             //---   				     
-			$scope.onUserRun = function(item) {
+			$scope.onUserRun = function(item, index) {
 				//--- game is finished
 				if(resetRequired) {
 					resetRequired = false;
@@ -77,6 +79,11 @@
 					}
 					//---
 					stepCounter++;
+					//--- 
+					prevOpponentPosition = index;
+					if(stepCounter == 0) {
+						firstOpponentPosition = index;
+					}
 					//---
 					$scope.computerRun((isCross + 1) % 2);
 					//---
@@ -89,19 +96,19 @@
 			$scope.isGameFinished = function() {
 				//--- check if won X
 				if($scope.ifWin(0)) {
-					$scope.resultMessage = '⭐ Win of user \'0\' ⭐';
+					$scope.gameResult = 2;
 					//---
 					return true;
 				}
 				//--- check if won 0
 				if($scope.ifWin(1)) {
-					$scope.resultMessage = '⭐ Win of user \'X\' ⭐';
+					$scope.gameResult = 1;
 					//---
 					return true;
 				}
 				//--- check if game finished
 				if($scope.ifNoPlaceToGo()) {
-					$scope.resultMessage = 'Nobody won!';;
+					$scope.gameResult = 0;
 					return true;
 				}
 				//---
@@ -152,8 +159,11 @@
 						if($scope.states[centralPosition].state == 1) {
 							computerStrategy = 1;
 						}
-						else if($scope.doesAnyAnglePositionsContains(opponentSymbol, function(pos) { savedFirstPositionAtStrategy2 = pos;})) {
+						else if($scope.isAnglePosition(opponentSymbol, prevOpponentPosition)) {
 							computerStrategy = 2;
+						}
+						else if($scope.isSidePosition(opponentSymbol, prevOpponentPosition)) {
+							computerStrategy = 3;
 						}
 					}
 				}
@@ -178,17 +188,30 @@
 						chosen = true;
 					} else if (stepCounter == 2) {
 						//--- find opposite position
-						var x = savedFirstPositionAtStrategy2 % 3;
-						var y = (savedFirstPositionAtStrategy2 - x) / 3;
-						var oppositeX = x > 0 ? 0 : 2;
-						var oppositeY = y > 0 ? 0 : 2;
-						var newPosition = oppositeY * 3 + oppositeX;
-						if($scope.states[newPosition].state != null) {
-							//--- already used => find any at side
+						var oppositePositions = $scope.getPositionOpposite(prevOpponentPosition);
+						if($scope.states[oppositePositions].state != null) {
+							//--- opposite position is used => find any at side
+							var positionAtSide = $scope.getFirstFreeAtSide();
+							console.log("choose '" + positionAtSide+ "', because second step, at side (strategy 2)");
+							$scope.states[positionAtSide].state = isCross;
+							chosen = true;
 						} else {
 							//--- go here
-							console.log("choose '" + centralPosition+ "', because second step (strategy 2)");
-							$scope.states[newPosition].state = isCross;
+							console.log("choose '" + oppositePositions+ "', because second step, opposite (strategy 2)");
+							$scope.states[oppositePositions].state = isCross;
+							chosen = true;
+						}
+					}
+				} else if(computerStrategy == 3) {
+					if(stepCounter == 1) {
+						console.log("choose '" + centralPosition+ "', because first step was at side (strategy 3)");
+						$scope.states[centralPosition].state = isCross;
+						chosen = true;
+					} else if(stepCounter == 2) {
+						if($scope.isAnglePosition(opponentSymbol, prevOpponentPosition)) {
+							var oppositePosition = $scope.getPositionOpposite(prevOpponentPosition);
+							console.log("choose '" + oppositePosition+ "', because second step was at angle " + prevOpponentPosition + " (strategy 3)");
+							$scope.states[oppositePosition].state = isCross;
 							chosen = true;
 						}
 					}
@@ -202,6 +225,27 @@
 					console.log("choose rand: " + emptyPositions[random]);
 				}
 			}
+			$scope.getPositionOpposite = function(sourcePosition) {
+				if(sourcePosition == undefined) {
+					throw "invalid position specified to get opposite, undefined";
+				}
+				if(sourcePosition == centralPosition) {
+					throw "invalid position specified to get opposite, opposite";
+				}
+				var x = sourcePosition % 3;
+				var y = (sourcePosition - x) / 3;
+				var oppositeX = 2 - x;;
+				var oppositeY = 2 - y;
+				return oppositeY * 3 + oppositeX;
+			}
+			$scope.getFirstFreeAtSide = function() {
+				for(var i=0;i<sidePositions.length;i++) {
+					if($scope.states[sidePositions[i]].state == null) {
+						return sidePositions[i];
+					}
+				}
+				return null;
+			}
 			$scope.getFirstFreeAnglePosition = function() {
 				for(var i=0;i<anglePositions.length;i++) {
 					if($scope.states[anglePositions[i]].state == null) {
@@ -210,10 +254,17 @@
 				}
 				return null;
 			}
-			$scope.doesAnyAnglePositionsContains = function(isCross, callback) {
+			$scope.isAnglePosition = function(isCross, position) {
 				for(var i=0;i<anglePositions.length;i++) {
-					if($scope.states[anglePositions[i]].state == isCross) {
-						if(callback) { callback(anglePositions[i])}
+					if(position == anglePositions[i] && $scope.states[anglePositions[i]].state == isCross) {
+						return true;
+					}
+				}
+				return false;
+			}
+			$scope.isSidePosition = function(isCross, position) {
+				for(var i=0;i<sidePositions.length;i++) {
+					if(position== sidePositions[i] && $scope.states[sidePositions[i]].state == isCross) {
 						return true;
 					}
 				}
@@ -229,11 +280,6 @@
 			}
 			$scope.getRand = function(min,max) {
 				return Math.floor(Math.random() * (max - min + 1)) + min;
-			}
-			//--- data to view
-			$scope.showState = function(item) {
-				if(item.state  == 0) return "⭕";
-				if(item.state == 1) return "❌";
 			}
 			//--- checks if current player won
 			$scope.ifWin = function(isCross,futurePosition) {
@@ -264,6 +310,28 @@
 			 		}
 			 	}
 			 	return true;
+			}
+			//--- data to view
+			$scope.showState = function(item) {
+				if(item.state  == 0) return "⭕";
+				if(item.state == 1) return "❌";
+			}
+			//--- shows game result
+			$scope.showResult = function(gameResult) {
+				switch(gameResult) {
+					case 0:
+						return 'Nobody won!';
+					break;
+					case 1:
+						return '⭐ Win of user \'X\' ⭐';
+					break;
+					case 2:
+						return '⭐ Win of user \'O\' ⭐';
+					break;
+					default:
+						return null;
+					break;
+				}
 			}
 		}
 	</script>
