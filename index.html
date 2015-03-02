@@ -13,8 +13,16 @@
 				overflow: hidden;
 				font-family: Comic Sans MS;
 				font-weight: bold;
+				text-align: center;
 			}
-			.game div {
+			.panel {
+				margin: 20px auto;
+				width: 302px;
+			}
+			.panel input[type=button]{
+				width: 140px;
+			}
+			.game div.cell {
 				width: 100px; 
 				height: 100px; 
 				border: solid 1px #000; 
@@ -32,10 +40,17 @@
 			.nought {
 				color: red;
 			}
+			.unavailable {
+				visibility: hidden;
+			}
 		</style>
 		<div ng-controller="GameController" ng-model="state">
-			<div class="game">
-				<div ng-repeat="item in states" ng-click="onUserRun(item, $index)" ng-class="{cross: item.state == 1, nought: item.state == 0}">
+			<div class="panel" ng-class="{ unavailable: gameType != null }">
+				<input type="button" value="user first" ng-click="onSelectGame(false)">
+				<input type="button" value="computer first" ng-click="onSelectGame(true)">
+			</div>
+			<div class="game" ng-class="{ unavailable: gameType == null }">				
+				<div ng-repeat="item in states" ng-click="onUserClick(item, $index)" class="cell" ng-class="{cross: item.state == 1, nought: item.state == 0}">
 					{{showState(item)}}
 				</div>
 			</div>
@@ -56,10 +71,11 @@
 			var firstOpponentPosition;
 			//---
 			var init = function() {
+				$scope.gameType = null;
 				$scope.gameResult = null;
 				//--- game starts with cross
 				var before = isCross;
-				isCross = 1;
+				isCross = 0;
 				//--- model initial state
 				$scope.states = [];
 				 	for(var i=0; i<9; i++) {
@@ -90,8 +106,14 @@
 					break;
 				}
 			}
+			//--- data to view
+			$scope.onSelectGame = function(gameType) {
+				$scope.gameType = gameType;
+				//---
+				startGame();
+			}
             //---   				     
-			$scope.onUserRun = function(item, index) {
+			$scope.onUserClick = function(item, index) {
 				//--- game is finished
 				if(resetRequired) {
 					resetRequired = false;
@@ -101,6 +123,7 @@
 				//---
 				if(item.state == null) {
 					//--- update cell with new status
+					isCross = (isCross + 1) % 2
 					item.state = isCross;
 					//--- check is result received
 					if(isGameFinished()) {
@@ -115,13 +138,19 @@
 						firstOpponentPosition = index;
 					}
 					//---
-					computerRun((isCross + 1) % 2);
+					isCross = (isCross + 1) % 2
+					computerRun(isCross);
 					//---
 					if(isGameFinished()) {
 						resetRequired = true;
 						return;
 					}
 				}				
+			}
+			var startGame = function() {
+				if($scope.gameType == 1) {
+					computerRun(isCross);
+				}
 			}
 			var isGameFinished = function() {
 				//--- check if won X
