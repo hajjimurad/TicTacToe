@@ -11,7 +11,8 @@
 				width: 302px;
 				margin: 20px auto;
 				overflow: hidden;
-				font-family: u2400;
+				font-family: Comic Sans MS;
+				font-weight: bold;
 			}
 			.game div {
 				width: 100px; 
@@ -25,10 +26,16 @@
 				text-align: center;
 				padding: 4px;
 			}
+			.cross {
+				color: blue;
+			}
+			.nought {
+				color: red;
+			}
 		</style>
 		<div ng-controller="GameController" ng-model="state">
 			<div class="game">
-				<div ng-repeat="item in states" ng-click="onUserRun(item, $index)">
+				<div ng-repeat="item in states" ng-click="onUserRun(item, $index)" ng-class="{cross: item.state == 1, nought: item.state == 0}">
 					{{showState(item)}}
 				</div>
 			</div>
@@ -63,8 +70,8 @@
 			init();
 			//--- data to view
 			$scope.showState = function(item) {
-				if(item.state  == 0) return "⭕";
-				if(item.state == 1) return "❌";
+				if(item.state  == 0) return "0"; // ⭕
+				if(item.state == 1) return "X"; // ❌
 			}
 			//--- shows game result
 			$scope.showResult = function(gameResult) {
@@ -73,10 +80,10 @@
 						return 'Nobody won!';
 					break;
 					case 1:
-						return '⭐ Win of user \'X\' ⭐';
+						return 'Win of user \'X\'';
 					break;
 					case 2:
-						return '⭐ Win of user \'O\' ⭐';
+						return 'Win of user \'O\'';
 					break;
 					default:
 						return null;
