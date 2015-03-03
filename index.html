@@ -67,19 +67,20 @@
 			var resetRequired = false;
 			var computerStrategy = null;
 			var stepCounter = 0;
-			var prevOpponentPosition;
-			var firstOpponentPosition;
+			var prevUserPosition;
+			var firstUserPosition;
 			//---
 			var init = function() {
 				$scope.gameType = null;
 				$scope.gameResult = null;
 				//--- game starts with cross
-				var before = isCross;
 				isCross = 0;
 				//--- model initial state
 				$scope.states = [];
 				 	for(var i=0; i<9; i++) {
 				 		$scope.states.push({ state: null });
+		 		//---
+		 		stepCounter = 0;
 			 	};
 			}
 			//---
@@ -121,34 +122,36 @@
 					return;
 				}
 				//---
-				if(item.state == null) {
-					//--- update cell with new status
-					isCross = (isCross + 1) % 2
-					item.state = isCross;
-					//--- check is result received
-					if(isGameFinished()) {
-						resetRequired = true;
-						return;
-					}
-					//---
-					stepCounter++;
-					//--- 
-					prevOpponentPosition = index;
-					if(stepCounter == 1) {
-						firstOpponentPosition = index;
-					}
-					//---
-					isCross = (isCross + 1) % 2
-					computerRun(isCross);
-					//---
-					if(isGameFinished()) {
-						resetRequired = true;
-						return;
-					}
-				}				
+				if(item.state != null) 
+					return;
+				//--- update cell with new status
+				isCross = (isCross + 1) % 2
+				item.state = isCross;
+				//--- check is result received
+				if(isGameFinished()) {
+					resetRequired = true;
+					return;
+				}
+				//---
+				stepCounter++;
+				//--- 
+				prevUserPosition = index;
+				if(stepCounter == 1) {
+					firstUserPosition = index;
+				}
+				//---
+				isCross = (isCross + 1) % 2
+				//--- computer turn
+				computerRun(isCross);
+				//--- check state again
+				if(isGameFinished()) {
+					resetRequired = true;
+					return;
+				}		
 			}
 			var startGame = function() {
 				if($scope.gameType == 1) {
+					isCross = (isCross + 1) % 2
 					computerRun(isCross);
 				}
 			}
@@ -206,80 +209,98 @@
 				}
 				if(chosen)
 					return;
-				//--- choose strategy
-				if(!computerStrategy) {
-					if(stepCounter == 1) {
-						if($scope.states[centralPosition].state == 1) {
-							computerStrategy = 1;
+				//---
+				if($scope.gameType == 0) {
+					//--- choose strategy
+					if(!computerStrategy) {
+						if(stepCounter == 1) {
+							if($scope.states[centralPosition].state == 1) {
+								computerStrategy = 1;
+							}
+							else if(isAnglePosition(opponentSymbol, prevUserPosition)) {
+								computerStrategy = 2;
+							}
+							else if(isSidePosition(opponentSymbol, prevUserPosition)) {
+								computerStrategy = 3;
+							}
 						}
-						else if(isAnglePosition(opponentSymbol, prevOpponentPosition)) {
-							computerStrategy = 2;
+					}
+					//--- act by selected strategy
+					if(computerStrategy == 1) {
+						//--- choose any angle cell or random
+						var anglePos = getFirstFreeAnglePosition();
+						if(anglePos != null) {
+							console.log("choose '" + anglePos+ "', because opponent get center first (strategy 1)");
+							$scope.states[anglePos].state = isCross;
+							chosen = true;
+						} else {
+							var anyFreePosition = getFirstFree();
+							console.log("choose '" + anglePos+ "', because opponent get center first and angle positions are not free (strategy 1)");
+							$scope.states[anyFreePosition].state = isCross;
+							chosen = true;
 						}
-						else if(isSidePosition(opponentSymbol, prevOpponentPosition)) {
-							computerStrategy = 3;
+					} else if(computerStrategy == 2) {
+						if(stepCounter == 1) {
+							console.log("choose '" + centralPosition+ "', because opponent get angle (strategy 2)");
+							$scope.states[centralPosition].state = isCross;
+							chosen = true;
+						} else if (stepCounter == 2) {
+							//--- find opposite position
+							var oppositePositions = getPositionOpposite(firstUserPosition);
+							if($scope.states[oppositePositions].state != null) {
+								//--- opposite position is used => find any at side
+								var positionAtSide = getFirstFreeAtSide();
+								console.log("choose '" + positionAtSide+ "', because second step, at side (strategy 2)");
+								$scope.states[positionAtSide].state = isCross;
+								chosen = true;
+							} else {
+								//--- go here
+								console.log("choose '" + oppositePositions+ "', because second step, opposite (strategy 2)");
+								$scope.states[oppositePositions].state = isCross;
+								chosen = true;
+							}
+						}
+					} else if(computerStrategy == 3) {
+						if(stepCounter == 1) {
+							console.log("choose '" + centralPosition+ "', because first step was at side (strategy 3.0)");
+							$scope.states[centralPosition].state = isCross;
+							chosen = true;
+						} else if(stepCounter == 2) {
+							var tempPos;
+							//----
+							if(isAnglePosition(opponentSymbol, prevUserPosition)) {
+								var oppositePosition = getPositionOpposite(prevUserPosition);
+								console.log("choose '" + oppositePosition+ "', because second step was at angle " + prevUserPosition + " (strategy 3.1)");
+								$scope.states[oppositePosition].state = isCross;
+								chosen = true;
+							} else if(getPositionOpposite(prevUserPosition) == firstUserPosition) {
+								var firstFreeAnglePosition = getFirstFreeAnglePosition();
+								console.log("choose '" + firstFreeAnglePosition+ "', because second step was at opposite to the first side (strategy 3.2)");
+								$scope.states[firstFreeAnglePosition].state = isCross;
+								chosen = true;
+							} else if(ifPositionNearAndAtSideToTheFirst(opponentSymbol,prevUserPosition,firstUserPosition, function(pos) { tempPos = pos})) {
+								console.log("choose '" + tempPos+ "', because second step was near at side (strategy 3.3)");
+								$scope.states[tempPos].state = isCross;
+								chosen = true;
+							}
 						}
 					}
 				}
-				//--- act by selected strategy
-				if(computerStrategy == 1) {
-					//--- choose any angle cell or random
-					var anglePos = getFirstFreeAnglePosition();
-					if(anglePos != null) {
-						console.log("choose '" + anglePos+ "', because opponent get center first (strategy 1)");
-						$scope.states[anglePos].state = isCross;
-						chosen = true;
-					} else {
-						var anyFreePosition = getFirstFree();
-						console.log("choose '" + anglePos+ "', because opponent get center first and angle positions are not free (strategy 1)");
-						$scope.states[anyFreePosition].state = isCross;
-						chosen = true;
-					}
-				} else if(computerStrategy == 2) {
-					if(stepCounter == 1) {
-						console.log("choose '" + centralPosition+ "', because opponent get angle (strategy 2)");
+				else if($scope.gameType == 1) {
+					if(stepCounter == 0) {
+						console.log("choose '" + centralPosition+ "', because need to start from center");
 						$scope.states[centralPosition].state = isCross;
 						chosen = true;
-					} else if (stepCounter == 2) {
-						//--- find opposite position
-						var oppositePositions = getPositionOpposite(firstOpponentPosition);
-						if($scope.states[oppositePositions].state != null) {
-							//--- opposite position is used => find any at side
-							var positionAtSide = getFirstFreeAtSide();
-							console.log("choose '" + positionAtSide+ "', because second step, at side (strategy 2)");
-							$scope.states[positionAtSide].state = isCross;
-							chosen = true;
-						} else {
-							//--- go here
-							console.log("choose '" + oppositePositions+ "', because second step, opposite (strategy 2)");
-							$scope.states[oppositePositions].state = isCross;
+					}
+					else {
+						//--- find the most remote cell for reviousPosition
+						var remoteToPrevious = getMostRemoteAngleTo(prevUserPosition);
+						if(remoteToPrevious) {
+							console.log("choose '" + remoteToPrevious + "', because it's the most remoted to " + prevUserPosition);
+							$scope.states[remoteToPrevious].state = isCross;
 							chosen = true;
 						}
 					}
-				} else if(computerStrategy == 3) {
-					if(stepCounter == 1) {
-						console.log("choose '" + centralPosition+ "', because first step was at side (strategy 3.0)");
-						$scope.states[centralPosition].state = isCross;
-						chosen = true;
-					} else if(stepCounter == 2) {
-						var tempPos;
-						//----
-						if(isAnglePosition(opponentSymbol, prevOpponentPosition)) {
-							var oppositePosition = getPositionOpposite(prevOpponentPosition);
-							console.log("choose '" + oppositePosition+ "', because second step was at angle " + prevOpponentPosition + " (strategy 3.1)");
-							$scope.states[oppositePosition].state = isCross;
-							chosen = true;
-						} else if(getPositionOpposite(prevOpponentPosition) == firstOpponentPosition) {
-							var firstFreeAnglePosition = getFirstFreeAnglePosition();
-							console.log("choose '" + firstFreeAnglePosition+ "', because second step was at opposite to the first side (strategy 3.2)");
-							$scope.states[firstFreeAnglePosition].state = isCross;
-							chosen = true;
-						} else if(ifPositionNearAndAtSideToTheFirst(opponentSymbol,prevOpponentPosition,firstOpponentPosition, function(pos) { tempPos = pos})) {
-							console.log("choose '" + tempPos+ "', because second step was near at side (strategy 3.3)");
-							$scope.states[tempPos].state = isCross;
-							chosen = true;
-						}
-					}
-
 				}
 				if(chosen)
 					return;
@@ -289,6 +310,29 @@
 					$scope.states[firstFree].state = isCross;
 					console.log("choose first free!!!");
 				}
+			}
+			var getMostRemoteAngleTo = function(sourcePosition) {
+				var maxDistance = 0;
+				var maxRemotePosition;
+				//---
+				for(var i=0;i<anglePositions.length;i++) {
+					if($scope.states[anglePositions[i]].state != null) 
+						continue;
+					//---
+					var x = sourcePosition % 3;
+					var y = (sourcePosition - x) / 3;
+					//---
+					var xAngle = anglePositions[i] % 3;
+					var yAngle = (anglePositions[i] - xAngle) / 3;
+					//---
+					var distance = Math.abs(x - xAngle) + Math.abs(y - yAngle);
+					//---
+					if(maxDistance < distance) {
+						maxDistance = distance;
+						maxRemotePosition = anglePositions[i];
+					}
+				}
+				return maxRemotePosition;
 			}
 			var ifPositionNearAndAtSideToTheFirst = function(isCross, position, firstPosition, callback) {
 				if(!callback)
