@@ -15,11 +15,11 @@
 				font-weight: bold;
 				text-align: center;
 			}
-			.panel {
+			.cpanel {
 				margin: 20px auto;
 				width: 302px;
 			}
-			.panel input[type=button]{
+			.cpanel input[type=button]{
 				width: 140px;
 			}
 			.game div.cell {
@@ -45,12 +45,12 @@
 			}
 		</style>
 		<div ng-controller="GameController" ng-model="state">
-			<div class="panel" ng-class="{ unavailable: gameType != null }">
+			<div class="cpanel" ng-class="{ unavailable: gameType != null }">
 				<input type="button" value="user first" ng-click="onSelectGame(false)">
 				<input type="button" value="computer first" ng-click="onSelectGame(true)">
 			</div>
 			<div class="game" ng-class="{ unavailable: gameType == null }">				
-				<div ng-repeat="item in states" ng-click="onUserClick(item, $index)" class="cell" ng-class="{cross: item.state == 1, nought: item.state == 0}">
+				<div ng-repeat="item in states" ng-click="onUserClick($index)" class="cell" ng-class="{cross: item.state == 1, nought: item.state == 0}">
 					{{showState(item)}}
 				</div>
 			</div>
@@ -114,30 +114,24 @@
 				startGame();
 			}
             //---   				     
-			$scope.onUserClick = function(item, index) {
+			$scope.onUserClick = function(index) {
 				//--- game is finished
 				if(resetRequired) {
 					resetRequired = false;
 					init();
 					return;
 				}
-				//---
-				if(item.state != null) 
+				//--- check if cell is available
+				if($scope.states[index].state != null) 
 					return;
 				//--- update cell with new status
 				isCross = (isCross + 1) % 2
-				item.state = isCross;
+				//---
+				userRun(index,isCross);
 				//--- check is result received
 				if(isGameFinished()) {
 					resetRequired = true;
 					return;
-				}
-				//---
-				stepCounter++;
-				//--- 
-				prevUserPosition = index;
-				if(stepCounter == 1) {
-					firstUserPosition = index;
 				}
 				//---
 				isCross = (isCross + 1) % 2
@@ -148,10 +142,10 @@
 					resetRequired = true;
 					return;
 				}		
-			}
+			}			
 			var startGame = function() {
 				if($scope.gameType == 1) {
-					isCross = (isCross + 1) % 2
+					isCross = 1;
 					computerRun(isCross);
 				}
 			}
@@ -176,6 +170,17 @@
 				//---
 				return false;
 			}
+			var userRun = function(index,isCross) {
+				$scope.states[index].state = isCross;
+				//---
+				stepCounter++;
+				//--- 
+				prevUserPosition = index;
+				if(stepCounter == 1) {
+					firstUserPosition = index;
+				}
+				return true;
+			}
 			var computerRun = function(isCross) {
 				var chosen = false;
 				var emptyPositions = [];
@@ -186,7 +191,8 @@
 						if(ifWin(isCross, i)) {
 							console.log("choose '" + i + "', because I can win");
 							$scope.states[i].state = isCross;
-							chosen = true;							
+							chosen = true;			
+							// placeTo(i,isCross,"choose '" + i + "', because computer can win")				
 							break;
 						}
 						emptyPositions.push(i);
@@ -288,6 +294,7 @@
 				}
 				else if($scope.gameType == 1) {
 					if(stepCounter == 0) {
+						//--- get center
 						console.log("choose '" + centralPosition+ "', because need to start from center");
 						$scope.states[centralPosition].state = isCross;
 						chosen = true;
@@ -306,9 +313,18 @@
 					return;
 				//--- choose random if no cell selected
 				if(emptyPositions.length > 0) {
-					var firstFree = getFirstFree();
-					$scope.states[firstFree].state = isCross;
-					console.log("choose first free!!!");
+					var firstFreePos = getFirstFree();
+					$scope.states[firstFreePos].state = isCross;
+					console.log("choose first free");
+				}
+			}
+			var placeTo = function(pos, isCross, reason) {
+				if($scope.states[pos].state != null) {
+					$scope.states[pos].state = isCross;
+					console.log(reason);
+				}
+				else {
+					throw "invalid position to set"
 				}
 			}
 			var getMostRemoteAngleTo = function(sourcePosition) {
