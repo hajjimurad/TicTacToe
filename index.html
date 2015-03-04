@@ -33,6 +33,7 @@
 			.result {
 				text-align: center;
 				padding: 4px;
+				height: 48px;
 			}
 			.cross {
 				color: blue;
@@ -45,16 +46,23 @@
 			}
 		</style>
 		<div ng-controller="GameController" ng-model="state">
+			<!-- Panel to choose game type -->
 			<div class="cpanel" ng-class="{ unavailable: gameType != null }">
 				<input type="button" value="user first" ng-click="onSelectGame(false)">
 				<input type="button" value="computer first" ng-click="onSelectGame(true)">
 			</div>
+			<!-- Place for game -->
 			<div class="game" ng-class="{ unavailable: gameType == null }">				
 				<div ng-repeat="item in states" ng-click="onUserClick($index)" class="cell" ng-class="{cross: item.state == 1, nought: item.state == 0}">
 					{{showState(item)}}
 				</div>
 			</div>
+			<!-- Result -->
 			<h3 class="result">{{showResult(gameResult)}}</h3>
+			<!-- Log records -->
+			<ul>
+				<li ng-repeat="record in log">{{record}}</li>
+			</ul>
 		</div>
 		<script type="text/javascript">
 		//--- entry point for game
@@ -142,7 +150,10 @@
 				}		
 			}			
 			var startGame = function() {
+				$scope.log = [];
 				step = 0;
+				firstUserPosition = null;
+				prevUserPosition = null;
 				//---
 				if($scope.gameType == 1) {
 					isCross = 1;
@@ -288,7 +299,7 @@
 						//--- find the most remote cell for reviousPosition
 						var remoteToPrevious = getMostRemoteAngleTo(prevUserPosition);
 						if(remoteToPrevious)
-							placeTo(remoteToPrevious,isCross,"it's the most remoted angle to " + prevUserPosition + " (strategy for crosses by dafault)");						
+							placeTo(remoteToPrevious,isCross,"it's the most remoted angle to " + prevUserPosition + " (strategy for crosses by default)");						
 						else {
 							var anyFree = getFirstFree();
 							placeTo(anyFree,isCross,"any free (strategy for crosses, when angle is not available");
@@ -307,10 +318,12 @@
 				//---
 				if($scope.states[pos].state == null) {
 					$scope.states[pos].state = isCross;
-					console.log("computer choose " + pos + ", because " + reason);
+					var record = "computer choose " + pos + ", because " + reason;
+					console.log(record);
+					$scope.log.push(record);
 				}
 				else {
-					throw "invalid position to set";
+					throw "invalid position to set for reason: " + reason;
 				}
 			}
 			var getMostRemoteAngleTo = function(sourcePosition) {
