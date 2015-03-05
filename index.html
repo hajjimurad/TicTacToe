@@ -67,35 +67,51 @@
 		<script type="text/javascript">
 		//--- entry point for game
 		var GameController = function($scope) {
+			//--- form constants
 			var winSums = [7, 56, 448, 73, 146, 292, 273, 84];
 			var anglePositions = [0,2,6,8];
 			var sidePositions = [1,3,5,7];
 			var centralPosition = 4;
+			//--- game temp data
 			var isCross;
-			var resetRequired = false;
-			var computerStrategy = null;
-			var step = 0;
-			var prevUserPosition;
+			var resetRequired;
+			var step;
 			var firstUserPosition;
+			var prevUserPosition;
+			var computerStrategy;
 			//---
-			var init = function() {
+			var initForm = function() {
 				$scope.gameType = null;
 				$scope.gameResult = null;
-				//--- game starts with cross
+			};
+			var startGame = function(gType) {
+				step = 0;
+				firstUserPosition = null;
+				prevUserPosition = null;
+				computerStrategy = null;
+				$scope.gameType = gType;
+				//---
+				resetRequired = false;
 				isCross = 0;
-				//--- model initial state
+				//---
+				$scope.log = [];
 				$scope.states = [];
-				 	for(var i=0; i<9; i++) {
-				 		$scope.states.push({ state: null });
+			 	for(var i=0; i<9; i++) {
+			 		$scope.states.push({ state: null });
 			 	};
-			}
+				//---
+				if($scope.gameType == 1) {
+					isCross = 1;
+					computerRun(isCross);
+				}
+			};
 			//---
-			init();
+			initForm();
 			//--- data to view
 			$scope.showState = function(item) {
 				if(item.state  == 0) return "0"; // ⭕
 				if(item.state == 1) return "X"; // ❌
-			}
+			};
 			//--- shows game result
 			$scope.showResult = function(gameResult) {
 				switch(gameResult) {
@@ -112,19 +128,19 @@
 						return null;
 					break;
 				}
-			}
+			};
 			//--- data to view
 			$scope.onSelectGame = function(gameType) {
-				$scope.gameType = gameType;
-				//---
-				startGame();
-			}
+				startGame(gameType);
+			};
             //---   				     
 			$scope.onUserClick = function(index) {
 				//--- game is finished
 				if(resetRequired) {
 					resetRequired = false;
-					init();
+					//---
+					initForm();
+					//---
 					return;
 				}
 				//--- check if cell is available
@@ -148,18 +164,7 @@
 					resetRequired = true;
 					return;
 				}		
-			}			
-			var startGame = function() {
-				$scope.log = [];
-				step = 0;
-				firstUserPosition = null;
-				prevUserPosition = null;
-				//---
-				if($scope.gameType == 1) {
-					isCross = 1;
-					computerRun(isCross);
-				}
-			}
+			};
 			var isGameFinished = function() {
 				//--- check if won X
 				if(ifWin(0)) {
@@ -180,9 +185,9 @@
 				}
 				//---
 				return false;
-			}
+			};
 			var userRun = function(index,isCross) {
-				$scope.states[index].state = isCross;
+				placeTo(index,isCross);
 				//---
 				step++;
 				//--- 
@@ -191,7 +196,7 @@
 					firstUserPosition = index;
 				}
 				return true;
-			}
+			};
 			var computerRun = function(isCross) {
 				var chosen = false;
 				var emptyPositions = [];
@@ -306,7 +311,7 @@
 						}
 					}
 				}
-			}
+			};
 			var placeTo = function(pos, isCross, reason) {
 				if(!$scope.states) {
 					throw "states are not initialized";
@@ -318,14 +323,17 @@
 				//---
 				if($scope.states[pos].state == null) {
 					$scope.states[pos].state = isCross;
-					var record = "computer choose " + pos + ", because " + reason;
+					var record = reason 
+								 ? ("computer chose " + pos + ", because " + reason)
+								 : "user chose " + pos;
+					 //---
 					console.log(record);
 					$scope.log.push(record);
 				}
 				else {
 					throw "invalid position to set for reason: " + reason;
 				}
-			}
+			};
 			var getMostRemoteAngleTo = function(sourcePosition) {
 				var maxDistance = 0;
 				var maxRemotePosition;
@@ -348,7 +356,7 @@
 					}
 				}
 				return maxRemotePosition;
-			}
+			};
 			var ifPositionNearAndAtSideToTheFirst = function(isCross, position, firstPosition, callback) {
 				if(!callback)
 					return null;
@@ -376,7 +384,7 @@
 				}
 				//---
 				return false;
-			}
+			};
 			var getPositionOpposite = function(sourcePosition) {
 				if(sourcePosition == undefined) {
 					throw "invalid position specified to get opposite, undefined";
@@ -389,7 +397,7 @@
 				var oppositeX = 2 - x;;
 				var oppositeY = 2 - y;
 				return oppositeY * 3 + oppositeX;
-			}
+			};
 			var getFirstFreeAtSide = function() {
 				for(var i=0;i<sidePositions.length;i++) {
 					if($scope.states[sidePositions[i]].state == null) {
@@ -397,7 +405,7 @@
 					}
 				}
 				return null;
-			}
+			};
 			var getFirstFreeAnglePosition = function() {
 				for(var i=0;i<anglePositions.length;i++) {
 					if($scope.states[anglePositions[i]].state == null) {
@@ -413,7 +421,7 @@
 					}
 				}
 				return null;
-			}
+			};
 			var isAnglePosition = function(isCross, position) {
 				for(var i=0;i<anglePositions.length;i++) {
 					if(position == anglePositions[i] && $scope.states[anglePositions[i]].state == isCross) {
@@ -421,7 +429,7 @@
 					}
 				}
 				return false;
-			}
+			};
 			var isSidePosition = function(isCross, position) {
 				for(var i=0;i<sidePositions.length;i++) {
 					if(position== sidePositions[i] && $scope.states[sidePositions[i]].state == isCross) {
@@ -429,7 +437,7 @@
 					}
 				}
 				return false;
-			}
+			};
 			//--- checks if current player won
 			var ifWin = function(isCross,futurePosition) {
 				//--- calculate sum of current elements
@@ -450,7 +458,7 @@
 		 		}
 		 		//---
 		 		return false;
-			}
+			};
 			//-- checks whether cells with empty data exists
 			var ifNoPlaceToGo = function() {
 				for(var i=0;i<9;i++) {
@@ -459,7 +467,7 @@
 			 		}
 			 	}
 			 	return true;
-			}
+			};
 		}
 	</script>
 	</body>
