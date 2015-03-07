@@ -1,4 +1,4 @@
-//--- Global constants initialization
+//--- Global constants initialization for 3x3 game
 Game.winSums = [7, 56, 448, 73, 146, 292, 273, 84];
 Game.anglePositions = [0,2,6,8];
 Game.sidePositions = [1,3,5,7];
@@ -7,23 +7,27 @@ Game.centralPosition = 4;
 function Game(gType) {
 	//--- game temp data
 	var isCross;
-	var step;
-	var firstUserPosition;
-	var prevUserPosition;
-	var computerStrategy;
+	var step = 0;
+	var firstUserPosition = null;
+	var prevUserPosition = null;
+	var computerStrategy = null;
 	var gameType = gType;
 	var gameResult;
 	//---
-	step = 0;
-	firstUserPosition = null;
-	prevUserPosition = null;
-	computerStrategy = null;
-	//---
 	var log = [];
 	var states = [];
- 	for(var i=0; i<9; i++) {
- 		states.push({ state: null });
- 	};
+ 	//---
+	this.start = function() {
+		//--- init states
+		for(var i=0; i<9; i++) {
+	 		states.push({ state: null });
+	 	};
+		//--- do first step is computer first
+		if(gameType == 1) {
+			isCross = 0;
+			this.computerRun(isCross);
+		}
+	}
  	//---
  	this.getLog = function() {
  		return log;
@@ -339,9 +343,4 @@ function Game(gType) {
 	 	}
 	 	return true;
 	};
-	//---
-	if(gameType == 1) {
-		isCross = 0;
-		this.computerRun(isCross);
-	}
 }

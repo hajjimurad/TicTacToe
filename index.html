@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Tic Tac Toe</title>
+		<title>'Tic Tac Toe' for 8th Light</title>
 		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootswatch/3.3.2/united/bootstrap.min.css" />
 		<link rel="stylesheet" href="main.css" />
 		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.js"></script>
@@ -24,7 +24,7 @@
 				</div>
 			</div>
 			<!-- Result -->
-			<h3 class="result">{{showResult(game != null && game.getGameResult())}}</h3>
+			<h3 class="result">{{showResult()}}</h3>
 			<!-- Log records -->
 			<ul>
 				<li ng-repeat="record in game.getLog()">{{record}}</li>

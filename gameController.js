@@ -1,23 +1,23 @@
 //--- entry point for game
 var GameController = function($scope) {	
+	var resetRequired;
 	//---
 	var initForm = function() {
 		$scope.selectedGameType = null;
 		$scope.game = null;
+		resetRequired = false;
 	};
 	//---
 	initForm();
-	//---
-	var startGame = function(gameType) {
-		return new Game(gameType);
-	}
 	//--- data to view
 	$scope.showState = function(item) {
 		if(item.state  == 0) return "0"; // ⭕
 		if(item.state == 1) return "X"; // ❌
 	};
 	//--- shows game result
-	$scope.showResult = function(gameResult) {
+	$scope.showResult = function() {
+		var gameResult = $scope.game != null && $scope.game.getGameResult();
+		//---
 		switch(gameResult) {
 			case 0:
 				return 'Nobody won!';
@@ -37,29 +37,30 @@ var GameController = function($scope) {
 	$scope.onSelectGame = function(gameType) {
 		$scope.selectedGameType = gameType;
 		//--- start new game
-		$scope.game = startGame(gameType);
+		$scope.game = new Game(gameType);
+		$scope.game.start();
 	};
     //---   				     
 	$scope.onUserClick = function(index) {
 		//--- game is finished
-		if($scope.resetRequired) {
-			$scope.resetRequired = false;
+		if(resetRequired) {
+			resetRequired = false;
 			initForm();
 			return;
 		}
-		//---
+		//--- user enters
 		if(!$scope.game.userRun(index,$scope.selectedGameType))
 			return;
 		//--- check is result received
 		if($scope.game.isGameFinished()) {
-			$scope.resetRequired = true;
+			resetRequired = true;
 			return;
 		}
 		//--- computer turn
 		$scope.game.computerRun(!$scope.selectedGameType);
 		//--- check state again
 		if($scope.game.isGameFinished()) {
-			$scope.resetRequired = true;
+			resetRequired = true;
 			return;
 		}		
 	};

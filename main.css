@@ -10,6 +10,9 @@
 	margin: 20px auto;
 	width: 302px;
 }
+.cpanel .btn {
+	width: 150px;
+}
 .game div.cell {
 	width: 100px; 
 	height: 100px; 
