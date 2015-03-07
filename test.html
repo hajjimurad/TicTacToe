@@ -1,0 +1,51 @@
+<script type="text/javascript" src="game.js"></script>
+<script>
+	//---
+	function test() {
+	//---
+	console.log("test 1 started");
+	//---
+	var game0 = new Game(0); 
+	game0.start();
+	//--- save state 0
+	var game0Back = game0.clone();
+	var ep0 = game0.getEmptyPositions();
+	//---
+	for(var i0=0;i0<ep0.length;i0++) {
+		assertResult(game0.runCycle(ep0[i0]));
+		//---
+		var game1Back = game0.clone();
+		var ep1 = game0.getEmptyPositions();
+		for(var i1=0;i1<ep1.length;i1++) {
+		  	assertResult(game0.runCycle(ep1[i1]));
+		  	//---
+		  	var game2Back = game0.clone();
+			var ep2 = game0.getEmptyPositions();
+			for(var i2=0;i2<ep2.length;i2++) {
+			  	assertResult(game0.runCycle(ep2[i2]));
+			  	//---
+			  	var game3Back = game0.clone();
+				var ep3 = game0.getEmptyPositions();
+				for(var i3=0;i3<ep3.length;i3++) {
+				  	assertResult(game0.runCycle(ep3[i3]));
+					game0 = game3Back.clone();
+				}
+			  	//---
+				game0 = game2Back.clone();
+			}
+		  	//---
+			game0 = game1Back.clone();
+		}
+		//---
+		game0 = game0Back.clone();
+	}
+	};
+	function assertResult(result) {
+		if(result == -1)
+			throw "invalid cell selected";
+		if(result == 2)
+			throw "user won, error";
+	}
+	//---
+	test();
+</script>

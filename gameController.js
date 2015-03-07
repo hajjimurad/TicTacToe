@@ -48,20 +48,10 @@ var GameController = function($scope) {
 			initForm();
 			return;
 		}
-		//--- user enters
-		if(!$scope.game.userRun(index,$scope.selectedGameType))
-			return;
-		//--- check is result received
-		if($scope.game.isGameFinished()) {
+		//---
+		if($scope.game.runCycle(index)) {
 			resetRequired = true;
 			return;
 		}
-		//--- computer turn
-		$scope.game.computerRun(!$scope.selectedGameType);
-		//--- check state again
-		if($scope.game.isGameFinished()) {
-			resetRequired = true;
-			return;
-		}		
 	};
 }

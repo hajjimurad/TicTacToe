@@ -4,18 +4,22 @@ Game.anglePositions = [0,2,6,8];
 Game.sidePositions = [1,3,5,7];
 Game.centralPosition = 4;
 //---
-function Game(gType) {
-	//--- game temp data
-	var isCross;
-	var step = 0;
-	var firstUserPosition = null;
-	var prevUserPosition = null;
-	var computerStrategy = null;
-	var gameType = gType;
-	var gameResult;
+function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStrategy, gStates) {
+	//--- game temp data	
+	var gameType = (typeof(gType) ==='undefined') ? 0 : gType;
+	var step = (typeof(gStep) ==='undefined') ? 0 : gStep;
+	var firstUserPosition = (typeof(gFirstUserPosition) ==='undefined') ? null : gFirstUserPosition;
+	var prevUserPosition = (typeof(gPrevUserPosition) ==='undefined') ? null : gPrevUserPosition;
+	var computerStrategy = (typeof(gComputerStrategy) ==='undefined') ? null : gComputerStrategy;
+	//---
+	var states = [];
+	if(typeof(gStates) !== 'undefined') {
+		for(var a=0;a<9;a++) {
+			states.push( { state: gStates[a].state });
+		}
+	}
 	//---
 	var log = [];
-	var states = [];
  	//---
 	this.start = function() {
 		//--- init states
@@ -24,42 +28,120 @@ function Game(gType) {
 	 	};
 		//--- do first step is computer first
 		if(gameType == 1) {
-			isCross = 0;
-			this.computerRun(isCross);
+			this.computerRun(0);
 		}
 	}
+	//---
+	this.clone = function() {
+		return new Game(gameType,step,firstUserPosition,prevUserPosition,computerStrategy,states);
+	};
+	this.testme = function() {
+		return firstUserPosition;
+	}
+	//---
+	this.forEveryEmpty = function(callback) {
+		for(var i=0;i<9;i++) {
+			if(states[i].state == null) {
+				console.log(i);
+				//---
+				if(callback(i))
+					break;
+			}
+		}
+	};
+	//---
+	this.getEmptyPositions = function() {
+		var temp = [];
+		for(var i=0;i<9;i++) {
+			if(states[i].state == null) {
+				temp.push(i);
+			}
+		}
+		//---
+		return temp;
+	};
+	//---
+	this.runCycle = function(index) {
+		//--- user enters
+		if(!this.userRun(index,gameType)) {
+			console.log("ERROR!!!");
+			return -1;
+		}
+		//--- check is result received
+		if(this.getGameResult() == null) {			
+			//--- computer turn
+			this.computerRun(!gameType);
+			//--- check state again
+			if(this.getGameResult() == null) {
+				this.printState();
+				console.log("███████████████████");
+				return 0;
+			} else {
+				this.printState();
+				console.log("win computer");
+				return 1;
+			}	
+
+		} else {
+			this.printState();
+			console.log("win user");
+			return 2; 
+		}
+	};
+	//--- 
+	this.printState = function() {
+		var temp="";
+		//---
+		for(var i=0;i<9;i++) {
+			//---
+			switch(states[i].state) {
+				case 0: 
+					temp += "0";
+				break;
+				case 1:
+					temp += "X";
+				break;
+				case null: 
+					temp +="-";
+				break;
+				case undefined: 
+					temp +="-";
+				break;
+				default:
+					temp += state[i].state;
+				break;
+			}
+			//---
+			if(i%3 == 2) {
+				console.log(temp);
+				temp = "";
+			}
+		}
+	} 
  	//---
  	this.getLog = function() {
  		return log;
- 	}
- 	this.getGameResult = function() {
- 		return gameResult;
- 	}
+ 	};
  	//---
  	this.getStates = function() {
  		return states;
  	}
 	//---
-	this.isGameFinished = function() {
+	this.getGameResult = function() {
 		//--- check if won X
 		if(ifWin(0)) {
-			gameResult = 2;
-			//---
-			return true;
+			return 2;
 		}
 		//--- check if won 0
 		if(ifWin(1)) {
-			gameResult = 1;
-			//---
-			return true;
+			return 1;
 		}
 		//--- check if game finished
 		if(ifNoPlaceToGo()) {
-			gameResult = 0;
-			return true;
+			return 0;
 		}
 		//---
-		return false;
+		return null;
 	};
 	this.userRun = function(index,isCross) {
 		//--- check if cell is available
@@ -83,7 +165,7 @@ function Game(gType) {
 		var emptyPositions = [];
 		//---
 		isCross = (isCross + 1) % 2
-		//--- 'IF I CAN WIN THEN WIN'
+		//--- 'if i can win then win'
 		for(var i=0;i<9;i++) {
 			if(states[i].state == null) {
 				//--- check if computer can win
@@ -97,7 +179,7 @@ function Game(gType) {
 		}
 		if(chosen)
 			return;
-		//--- 'IF OPPONENT CAN WIN AT NEXT STEP THEN GO THERE'
+		//--- 'if opponent can win at next step then go there'
 		var opponentSymbol = (isCross + 1) % 2;
 		for(var i=0;i<9;i++) {
 			if(states[i].state == null) {
@@ -202,7 +284,7 @@ function Game(gType) {
 						 ? ("computer chose " + pos + ", because " + reason)
 						 : "user chose " + pos;
 			 //---
-			console.log(record);
+			//console.log(record);
 			log.push(record);
 		}
 		else {
