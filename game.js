@@ -6,7 +6,7 @@ Game.centralPosition = 4;
 //---
 function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStrategy, gStates) {
 	//--- game temp data	
-	var gameType = (typeof(gType) ==='undefined') ? 0 : gType;
+	var gameType = (typeof(gType) ==='undefined') ? false : gType;
 	var step = (typeof(gStep) ==='undefined') ? 0 : gStep;
 	var firstUserPosition = (typeof(gFirstUserPosition) ==='undefined') ? null : gFirstUserPosition;
 	var prevUserPosition = (typeof(gPrevUserPosition) ==='undefined') ? null : gPrevUserPosition;
@@ -64,59 +64,54 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 	this.runCycle = function(index) {
 		//--- user enters
 		if(!this.userRun(index,gameType)) {
-			console.log("ERROR!!!");
-			return -1;
+			throw "invalid cell selected";
 		}
 		//--- check is result received
-		if(this.getGameResult() == null) {			
-			//--- computer turn
-			this.computerRun(!gameType);
-			//--- check state again
-			if(this.getGameResult() == null) {
-				this.printState();
-				console.log("███████████████████");
-				return 0;
-			} else {
-				this.printState();
-				console.log("win computer");
-				return 1;
-			}	
-
-		} else {
-			this.printState();
-			console.log("win user");
-			return 2; 
+		var res1 = this.getGameResult();
+		if(res1 != null) {
+			this.printState(res1);
+			return res1			
 		}
+		//--- computer turn
+		this.computerRun(!gameType);
+		//--- check state again
+		var res2 = this.getGameResult();
+		if(res2 != null) {
+			this.printState(res2);
+		}
+		//---
+		return res2;
 	};
 	//--- 
-	this.printState = function() {
+	this.printState = function(result) {
 		var temp="";
 		//---
-		for(var i=0;i<9;i++) {
-			//---
-			switch(states[i].state) {
-				case 0: 
-					temp += "0";
-				break;
-				case 1:
-					temp += "X";
-				break;
-				case null: 
-					temp +="-";
-				break;
-				case undefined: 
-					temp +="-";
-				break;
-				default:
-					temp += state[i].state;
-				break;
-			}
-			//---
-			if(i%3 == 2) {
-				console.log(temp);
-				temp = "";
-			}
-		}
+		// for(var i=0;i<9;i++) {
+		// 	//---
+		// 	switch(states[i].state) {
+		// 		case 0: 
+		// 			temp += "0";
+		// 		break;
+		// 		case 1:
+		// 			temp += "X";
+		// 		break;
+		// 		case null: 
+		// 			temp +="-";
+		// 		break;
+		// 		case undefined: 
+		// 			temp +="-";
+		// 		break;
+		// 		default:
+		// 			temp += state[i].state;
+		// 		break;
+		// 	}
+		// 	//---
+		// 	if(i%3 == 2) {
+		// 		console.log(temp);
+		// 		temp = "";
+		// 	}
+		// }
+		console.log(result + "------------------------");
 	} 
  	//---
  	this.getLog = function() {
@@ -128,17 +123,17 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
  	}
 	//---
 	this.getGameResult = function() {
-		//--- check if won X
-		if(ifWin(0)) {
-			return 2;
-		}
 		//--- check if won 0
+		if(ifWin(0)) {
+			return "0";
+		}
+		//--- check if won X
 		if(ifWin(1)) {
-			return 1;
+			return "X";
 		}
 		//--- check if game finished
 		if(ifNoPlaceToGo()) {
-			return 0;
+			return "-";
 		}
 		//---
 		return null;

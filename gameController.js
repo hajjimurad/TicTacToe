@@ -19,13 +19,13 @@ var GameController = function($scope) {
 		var gameResult = $scope.game != null && $scope.game.getGameResult();
 		//---
 		switch(gameResult) {
-			case 0:
+			case "-":
 				return 'Nobody won!';
 			break;
-			case 1:
+			case "X":
 				return 'Winner is user \'X\'';
 			break;
-			case 2:
+			case "0":
 				return 'Winner is user \'O\'';
 			break;
 			default:
@@ -49,7 +49,7 @@ var GameController = function($scope) {
 			return;
 		}
 		//---
-		if($scope.game.runCycle(index)) {
+		if($scope.game.runCycle(index) != null) {
 			resetRequired = true;
 			return;
 		}
