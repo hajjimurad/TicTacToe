@@ -28,7 +28,7 @@ function TestController($scope) {
 		for(var i0=0;i0<emptyPositions0.length;i0++) {
 			var r0 = game0.runCycle(emptyPositions0[i0]);
 			//---
-			countResult(gameType,r0);
+			countResult(r0);
 			if(r0 == null) {
 				var game1Back = game0.clone();
 				var emptyPositions1 = game0.getEmptyPositions();
