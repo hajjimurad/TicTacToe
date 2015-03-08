@@ -1,102 +1,17 @@
-<script type="text/javascript" src="game.js"></script>
-<script>
-	var globResCounter;
-	function initCounter() {
-		globResCounter = { resX: 0, res0: 0, resNone: 0, total: 0};
-	} 
-	//---
-	function test(gameType) {
-		initCounter();
-		//---
-		console.log("test when user is " + (gameType ? "second" : "first") + " started");
-		//---
-		var game0 = new Game(gameType); 
-		game0.start();
-		//--- save state 0
-		var game0Back = game0.clone();
-		var ep0 = game0.getEmptyPositions();
-		//---
-		for(var i0=0;i0<ep0.length;i0++) {
-			var r0 = game0.runCycle(ep0[i0]);
-			//---
-			assertResult(gameType,r0);
-			if(r0 == null) {
-				var game1Back = game0.clone();
-				var ep1 = game0.getEmptyPositions();
-				for(var i1=0;i1<ep1.length;i1++) {
-				  	var r1 = game0.runCycle(ep1[i1]);
-				  	//---
-					assertResult(gameType,r1);
-					if(r1 == null) {
-					  	var game2Back = game0.clone();
-						var ep2 = game0.getEmptyPositions();
-						for(var i2=0;i2<ep2.length;i2++) {
-							var r2 = game0.runCycle(ep2[i2]);
-							//---
-						  	assertResult(gameType,r2);
-						  	if(r2 == null) {
-							 	var game3Back = game0.clone();
-								var ep3 = game0.getEmptyPositions();
-								for(var i3=0;i3<ep3.length;i3++) {
-									var r3=game0.runCycle(ep3[i3]);
-									//---
-								  	assertResult(gameType,r3);
-								  	if(r3 == null) {
-									 	var game4Back = game0.clone();
-										var ep4 = game0.getEmptyPositions();
-										for(var i4=0;i4<ep4.length;i4++) {
-											var r4=game0.runCycle(ep4[i4]);
-										  	assertResult(gameType,r4);
-										 	//----!!!	
-											game0 = game4Back.clone();
-										}
-									}
-								 	//---
-									game0 = game3Back.clone();
-								}
-							}
-						  	//---
-							game0 = game2Back.clone();
-						}
-					}
-				  	//---
-					game0 = game1Back.clone();
-				}
-			}
-			//---
-			game0 = game0Back.clone();
-		}
-		//---
-		printResult();
-		globResCounter = null;
-	};
-	function assertResult(gameType,result) {
-		if(result != null) {
-			globResCounter.total++;
-			//---
-			switch(result) {
-				case "X":
-				globResCounter.resX++;
-				break;
-				case "0":
-				globResCounter.res0++;
-				break;
-				case "-":
-				globResCounter.resNone++;
-				break;
-				default:
-					throw "unexpected: " + result;
-				break;
-			}
-		}
-	}
-	function printResult() {
-		console.log("X: " + globResCounter.resX);
-		console.log("Y: " + globResCounter.res0);
-		console.log("0: " + globResCounter.resNone);
-		console.log("FROM: " + globResCounter.total);
-	}
-	//---
-	test(false)
-	test(true);
-</script>
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test of 'Tic Tac Toe' for 8th Light</title>
+		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.js"></script>
+		<script type="text/javascript" src="game.js"></script>
+		<script type="text/javascript" src="testController.js"></script>
+	</head>
+	<body ng-app>
+		<div ng-controller="TestController">
+			<!-- Log records -->
+			<div style="padding: 24px;">
+				<p ng-repeat="record in getLog()">{{record}}</p>
+			</div>
+		</div>
+	</body>
+</html>
