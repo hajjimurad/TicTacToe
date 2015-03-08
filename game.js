@@ -1,53 +1,40 @@
-//--- Global constants initialization for 3x3 game
+//--- global constants initialization for 3x3 game
 Game.winSums = [7, 56, 448, 73, 146, 292, 273, 84];
 Game.anglePositions = [0,2,6,8];
 Game.sidePositions = [1,3,5,7];
 Game.centralPosition = 4;
+Game.gameType = { userFirst: false, computerFirst: true };
 //---
 function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStrategy, gStates) {
-	//--- game temp data	
-	var gameType = (typeof(gType) ==='undefined') ? false : gType;
+	//--- game data	
+	var gameType = (typeof(gType) ==='undefined') ? Game.gameType.userFirst : gType;
 	var step = (typeof(gStep) ==='undefined') ? 0 : gStep;
 	var firstUserPosition = (typeof(gFirstUserPosition) ==='undefined') ? null : gFirstUserPosition;
 	var prevUserPosition = (typeof(gPrevUserPosition) ==='undefined') ? null : gPrevUserPosition;
 	var computerStrategy = (typeof(gComputerStrategy) ==='undefined') ? null : gComputerStrategy;
 	//---
+	var log = [];
+	//--- deep copy
 	var states = [];
 	if(typeof(gStates) !== 'undefined') {
 		for(var a=0;a<9;a++) {
 			states.push( { state: gStates[a].state });
 		}
 	}
-	//---
-	var log = [];
  	//---
 	this.start = function() {
 		//--- init states
 		for(var i=0; i<9; i++) {
 	 		states.push({ state: null });
-	 	};
+	 	}
 		//--- do first step is computer first
-		if(gameType == 1) {
+		if(gameType == Game.gameType.computerFirst) {
 			this.computerRun(0);
 		}
-	}
+	};
 	//---
 	this.clone = function() {
 		return new Game(gameType,step,firstUserPosition,prevUserPosition,computerStrategy,states);
-	};
-	this.testme = function() {
-		return firstUserPosition;
-	}
-	//---
-	this.forEveryEmpty = function(callback) {
-		for(var i=0;i<9;i++) {
-			if(states[i].state == null) {
-				console.log(i);
-				//---
-				if(callback(i))
-					break;
-			}
-		}
 	};
 	//---
 	this.getEmptyPositions = function() {
@@ -74,9 +61,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		//--- computer turn
 		this.computerRun(!gameType);
 		//--- check state again
-		var res2 = this.getGameResult();
-		//---
-		return res2;
+		return this.getGameResult();
 	};
  	//---
  	this.getLogs = function() {
@@ -106,9 +91,9 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 	this.userRun = function(index,isCross) {
 		//--- check if cell is available
 		if(states[index].state != null) 
-			return false;;
+			return false;
 		//---
-		isCross = (isCross + 1) % 2
+		isCross = (isCross + 1) % 2;
 		//---
 		placeTo(index,isCross);
 		//---
@@ -141,7 +126,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 			return;
 		//--- 'if opponent can win at next step then go there'
 		var opponentSymbol = (isCross + 1) % 2;
-		for(var i=0;i<9;i++) {
+		for(i=0;i<9;i++) {
 			if(states[i].state == null) {
 				//--- check if opponent can win
 				if(ifWin(opponentSymbol, i)) {
@@ -154,7 +139,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		if(chosen)
 			return;
 		//---
-		if(gameType == 0) {
+		if(gameType == Game.gameType.userFirst) {
 			//--- choose strategy
 			if(!computerStrategy) {
 				if(step == 1) {
@@ -191,7 +176,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 						placeTo(oppositePositions,isCross,"second step, opposite (strategy 2 for noughts)");
 					}
 				} else {
-					placeTo(getFirstFree(),isCross,"any free (strategy 2 for noughts)");
+					placeTo(getFirstFree(),isCross,"selects any free (strategy 2 for noughts)");
 				}
 			} else if(computerStrategy == 3) {
 				if(step == 1) {
@@ -206,14 +191,14 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 					} else if(ifPositionNearAndAtSideToTheFirst(opponentSymbol,prevUserPosition,firstUserPosition, function(pos) { tempPos = pos})) {
 						placeTo(tempPos,isCross,"second step was near at side (strategy 3.3 for noughts)");
 					} else {
-					placeTo(getFirstFree(),isCross,"any free (strategy 3 for noughts)");
+					placeTo(getFirstFree(),isCross,"selects any free (strategy 3 for noughts)");
 					}
 				} else {
-					placeTo(getFirstFree(),isCross,"any free (strategy 3 for noughts)");
+					placeTo(getFirstFree(),isCross,"selects any free (strategy 3 for noughts)");
 				}
 			}
 		}
-		else if(gameType == 1) {
+		else if(gameType == Game.gameType.computerFirst) {
 			if(step == 0) {
 				//--- get center
 				placeTo(Game.centralPosition,isCross,"need to start from center");
@@ -224,7 +209,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 				if(remoteToPrevious)
 					placeTo(remoteToPrevious,isCross,"it's the most remoted angle to " + prevUserPosition + " (strategy for crosses by default)");						
 				else {
-					placeTo(getFirstFree(),isCross,"any free (strategy for crosses, when angle is not available");
+					placeTo(getFirstFree(),isCross,"selects any free (strategy for crosses, when angle is not available");
 				}
 			}
 		}
@@ -241,8 +226,8 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		if(states[pos].state == null) {
 			states[pos].state = isCross;
 			var record = reason 
-						 ? ("computer chose " + pos + ", because " + reason)
-						 : "user chose " + pos;
+						 ? ("computer chooses " + pos + ", because " + reason)
+						 : "user chooses " + pos;
 			 //---
 			//console.log(record);
 			log.push(record);
@@ -311,7 +296,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		}
 		var x = sourcePosition % 3;
 		var y = (sourcePosition - x) / 3;
-		var oppositeX = 2 - x;;
+		var oppositeX = 2 - x;
 		var oppositeY = 2 - y;
 		return oppositeY * 3 + oppositeX;
 	};
@@ -330,7 +315,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 			}
 		}
 		return null;
-	}
+	};
 	var getFirstFree = function() {
 		for(var i=0;i<9;i++) {
 			if(states[i].state == null) {
@@ -361,7 +346,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		var tempSum = 0; 
 		for(var i=0;i<9;i++) {
 	 		if(states[i].state == isCross) {		 				
- 					tempSum |= Math.pow(2,i);
+				tempSum |= Math.pow(2,i);
  			}
 	 	}
 	 	//--- if future position specified then take it into consideration too

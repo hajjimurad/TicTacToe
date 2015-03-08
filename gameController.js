@@ -1,5 +1,4 @@
-//--- entry point for game
-var GameController = function($scope) {	
+var GameController = function($scope) {
 	var resetRequired;
 	//---
 	var initForm = function() {
@@ -51,7 +50,6 @@ var GameController = function($scope) {
 		//---
 		if($scope.game.runCycle(index) != null) {
 			resetRequired = true;
-			return;
 		}
 	};
-}
+};

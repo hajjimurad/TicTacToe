@@ -35,27 +35,27 @@ function TestController($scope) {
 				for(var i1=0;i1<emptyPositions1.length;i1++) {
 				  	var r1 = game0.runCycle(emptyPositions1[i1]);
 				  	//---
-					countResult(gameType,r1);
+					countResult(r1);
 					if(r1 == null) {
 					  	var game2Back = game0.clone();
 						var emptyPositions2 = game0.getEmptyPositions();
 						for(var i2=0;i2<emptyPositions2.length;i2++) {
 							var r2 = game0.runCycle(emptyPositions2[i2]);
 							//---
-						  	countResult(gameType,r2);
+						  	countResult(r2);
 						  	if(r2 == null) {
 							 	var game3Back = game0.clone();
 								var emptyPositions3 = game0.getEmptyPositions();
 								for(var i3=0;i3<emptyPositions3.length;i3++) {
 									var r3=game0.runCycle(emptyPositions3[i3]);
 									//---
-								  	countResult(gameType,r3);
+								  	countResult(r3);
 								  	if(r3 == null) {
 									 	var game4Back = game0.clone();
 										var emptyPositions4 = game0.getEmptyPositions();
 										for(var i4=0;i4<emptyPositions4.length;i4++) {
 											var r4=game0.runCycle(emptyPositions4[i4]);
-										  	countResult(gameType,r4);
+										  	countResult(r4);
 										 	//----!!!	
 											game0 = game4Back.clone();
 										}
@@ -84,9 +84,9 @@ function TestController($scope) {
 			log("ERROR: Computer started with X and lost");
 		//---
 		log("--------------------------------------");
-	};
+	}
 	//---
-	function countResult(gameType,result) {
+	function countResult(result) {
 		if(result != null) {
 			resultCounter.total++;
 			//---
@@ -107,6 +107,6 @@ function TestController($scope) {
 		}
 	}
 	//--- run tests
-	test(false)
+	test(false);
 	test(true);
 }
