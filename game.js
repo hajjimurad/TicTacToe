@@ -64,63 +64,28 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 	this.runCycle = function(index) {
 		//--- user enters
 		if(!this.userRun(index,gameType)) {
-			throw "invalid cell selected";
+			return null;
 		}
 		//--- check is result received
 		var res1 = this.getGameResult();
 		if(res1 != null) {
-			this.printState(res1);
 			return res1			
 		}
 		//--- computer turn
 		this.computerRun(!gameType);
 		//--- check state again
 		var res2 = this.getGameResult();
-		if(res2 != null) {
-			this.printState(res2);
-		}
 		//---
 		return res2;
 	};
-	//--- 
-	this.printState = function(result) {
-		var temp="";
-		//---
-		// for(var i=0;i<9;i++) {
-		// 	//---
-		// 	switch(states[i].state) {
-		// 		case 0: 
-		// 			temp += "0";
-		// 		break;
-		// 		case 1:
-		// 			temp += "X";
-		// 		break;
-		// 		case null: 
-		// 			temp +="-";
-		// 		break;
-		// 		case undefined: 
-		// 			temp +="-";
-		// 		break;
-		// 		default:
-		// 			temp += state[i].state;
-		// 		break;
-		// 	}
-		// 	//---
-		// 	if(i%3 == 2) {
-		// 		console.log(temp);
-		// 		temp = "";
-		// 	}
-		// }
-		console.log(result + "------------------------");
-	} 
  	//---
- 	this.getLog = function() {
+ 	this.getLogs = function() {
  		return log;
  	};
  	//---
  	this.getStates = function() {
  		return states;
- 	}
+ 	};
 	//---
 	this.getGameResult = function() {
 		//--- check if won 0
@@ -159,7 +124,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		var chosen = false;
 		var emptyPositions = [];
 		//---
-		isCross = (isCross + 1) % 2
+		isCross = (isCross + 1) % 2;
 		//--- 'if i can win then win'
 		for(var i=0;i<9;i++) {
 			if(states[i].state == null) {

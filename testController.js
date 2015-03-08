@@ -1,12 +1,13 @@
 function TestController($scope) {
-	var log = [];
+	var logs = [];
 	var resultCounter;
 	//--- data to view
 	$scope.getLog = function() {
-		return log;
+		return logs;
 	};
-	function print(message) {
-		log.push(message);
+	function log(message) {
+		logs.push(message);
+		console.log(message);
 	}
 	//--- counter of game results
 	function initCounter() {
@@ -16,44 +17,44 @@ function TestController($scope) {
 	function test(gameType) {
 		initCounter();
 		//---
-		print("Test 'user is " + (gameType ? "0" : "X") + "' started");
+		log("Test 'user is " + (gameType ? "0" : "X") + "' started");
 		//---
 		var game0 = new Game(gameType); 
 		game0.start();
 		//--- save state 0
 		var game0Back = game0.clone();
-		var ep0 = game0.getEmptyPositions();
+		var emptyPositions0 = game0.getEmptyPositions();
 		//---
-		for(var i0=0;i0<ep0.length;i0++) {
-			var r0 = game0.runCycle(ep0[i0]);
+		for(var i0=0;i0<emptyPositions0.length;i0++) {
+			var r0 = game0.runCycle(emptyPositions0[i0]);
 			//---
 			countResult(gameType,r0);
 			if(r0 == null) {
 				var game1Back = game0.clone();
-				var ep1 = game0.getEmptyPositions();
-				for(var i1=0;i1<ep1.length;i1++) {
-				  	var r1 = game0.runCycle(ep1[i1]);
+				var emptyPositions1 = game0.getEmptyPositions();
+				for(var i1=0;i1<emptyPositions1.length;i1++) {
+				  	var r1 = game0.runCycle(emptyPositions1[i1]);
 				  	//---
 					countResult(gameType,r1);
 					if(r1 == null) {
 					  	var game2Back = game0.clone();
-						var ep2 = game0.getEmptyPositions();
-						for(var i2=0;i2<ep2.length;i2++) {
-							var r2 = game0.runCycle(ep2[i2]);
+						var emptyPositions2 = game0.getEmptyPositions();
+						for(var i2=0;i2<emptyPositions2.length;i2++) {
+							var r2 = game0.runCycle(emptyPositions2[i2]);
 							//---
 						  	countResult(gameType,r2);
 						  	if(r2 == null) {
 							 	var game3Back = game0.clone();
-								var ep3 = game0.getEmptyPositions();
-								for(var i3=0;i3<ep3.length;i3++) {
-									var r3=game0.runCycle(ep3[i3]);
+								var emptyPositions3 = game0.getEmptyPositions();
+								for(var i3=0;i3<emptyPositions3.length;i3++) {
+									var r3=game0.runCycle(emptyPositions3[i3]);
 									//---
 								  	countResult(gameType,r3);
 								  	if(r3 == null) {
 									 	var game4Back = game0.clone();
-										var ep4 = game0.getEmptyPositions();
-										for(var i4=0;i4<ep4.length;i4++) {
-											var r4=game0.runCycle(ep4[i4]);
+										var emptyPositions4 = game0.getEmptyPositions();
+										for(var i4=0;i4<emptyPositions4.length;i4++) {
+											var r4=game0.runCycle(emptyPositions4[i4]);
 										  	countResult(gameType,r4);
 										 	//----!!!	
 											game0 = game4Back.clone();
@@ -75,9 +76,14 @@ function TestController($scope) {
 			game0 = game0Back.clone();
 		}
 		//---
-		printResult();
-		print("--------------------------------------");
-		processResult(gameType);
+		log("Test finished. Games tested: " + resultCounter.total + ". Cross won: " + resultCounter.resX + ", Nought won: " + resultCounter.res0 + ", Nobody won: " + resultCounter.resNone);
+		if(!gameType && (resultCounter.resX > 0))
+			log("ERROR: User started with X and won");
+			//---
+		if(gameType && (resultCounter.res0 > 0))
+			log("ERROR: Computer started with X and lost");
+		//---
+		log("--------------------------------------");
 	};
 	//---
 	function countResult(gameType,result) {
@@ -99,17 +105,6 @@ function TestController($scope) {
 				break;
 			}
 		}
-	}
-	function processResult(gameType) {
-		if(!gameType && (resultCounter.resX > 0))
-			throw "User started and won";
-			//---
-		if(gameType && (resultCounter.resY > 0))
-			throw "User started and won";
-	}
-	//---
-	function printResult() {
-		print("Test finished. Games tested: " + resultCounter.total + ". X won: " + resultCounter.resX + ", Y won: " + resultCounter.res0 + ", Nobody won: " + resultCounter.resNone);
 	}
 	//--- run tests
 	test(false)
