@@ -17,6 +17,7 @@ function TestController($scope) {
 	function test(gameType) {
 		initCounter();
 		//---
+        log("--------------")
 		log("Test 'user is " + (gameType ? "0" : "X") + "' started");
 		//---
 		var game0 = new Game(gameType); 
@@ -76,14 +77,9 @@ function TestController($scope) {
 			game0 = game0Back.clone();
 		}
 		//---
-		log("Test finished. Games tested: " + resultCounter.total + ". Cross won: " + resultCounter.resX + ", Nought won: " + resultCounter.res0 + ", Nobody won: " + resultCounter.resNone);
-		if(!gameType && (resultCounter.resX > 0))
-			log("ERROR: User started with X and won");
-			//---
-		if(gameType && (resultCounter.res0 > 0))
-			log("ERROR: Computer started with X and lost");
-		//---
-		log("--------------------------------------");
+		log("Games tested: " + resultCounter.total + " (cross won: " + resultCounter.resX + ", nought won: " + resultCounter.res0 + ", drawn game: " + resultCounter.resNone + ")");
+        //---
+        return gameType == Game.gameType.userFirst ? resultCounter.resX : resultCounter.res0;
 	}
 	//---
 	function countResult(result) {
@@ -107,6 +103,9 @@ function TestController($scope) {
 		}
 	}
 	//--- run tests
-	test(false);
-	test(true);
+	var userWinsCount = test(Game.gameType.userFirst);
+    log(userWinsCount > 0 ? "ERROR: matches found where user started with X and won" : "SUCCESS: test passed, crosses have never won");
+    //---
+    userWinsCount = test(Game.gameType.computerFirst);
+    log(userWinsCount > 0 ? "ERROR: matches found where computer started with X and lost" : "SUCCESS: test passed, noughts have never won");
 }

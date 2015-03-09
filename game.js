@@ -115,7 +115,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 			if(states[i].state == null) {
 				//--- check if computer can win
 				if(ifWin(isCross, i)) {	
-					placeTo(i,isCross,"computer can win");		
+					placeTo(i,isCross,"computer can win");
 					chosen = true;
 					break;
 				}
@@ -130,7 +130,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 			if(states[i].state == null) {
 				//--- check if opponent can win
 				if(ifWin(opponentSymbol, i)) {
-					placeTo(i,isCross,"user can win");		
+					placeTo(i,isCross,"user can win");
 					chosen = true;
 					break;
 				}
@@ -138,7 +138,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		}
 		if(chosen)
 			return;
-		//---
+        //---
 		if(gameType == Game.gameType.userFirst) {
 			//--- choose strategy
 			if(!computerStrategy) {
@@ -345,7 +345,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 		//--- calculate sum of current elements
 		var tempSum = 0; 
 		for(var i=0;i<9;i++) {
-	 		if(states[i].state == isCross) {		 				
+	 		if(states[i].state == isCross) {
 				tempSum |= Math.pow(2,i);
  			}
 	 	}
@@ -365,7 +365,7 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 	var ifNoPlaceToGo = function() {
 		for(var i=0;i<9;i++) {
 	 		if(states[i].state == null) {
-	 			return false;		 				
+	 			return false;
 	 		}
 	 	}
 	 	return true;

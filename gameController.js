@@ -10,8 +10,8 @@ var GameController = function($scope) {
 	initForm();
 	//--- data to view
 	$scope.showState = function(item) {
-		if(item.state  == 0) return "0"; // ⭕
-		if(item.state == 1) return "X"; // ❌
+		if(item.state  == 0) return "0";
+		if(item.state == 1) return "X";
 	};
 	//--- shows game result
 	$scope.showResult = function() {
@@ -19,7 +19,7 @@ var GameController = function($scope) {
 		//---
 		switch(gameResult) {
 			case "-":
-				return 'Nobody won!';
+				return 'Drawn game!';
 			break;
 			case "X":
 				return 'Winner is user \'X\'';
@@ -39,7 +39,7 @@ var GameController = function($scope) {
 		$scope.game = new Game(gameType);
 		$scope.game.start();
 	};
-    //---   				     
+    //---
 	$scope.onUserClick = function(index) {
 		//--- game is finished
 		if(resetRequired) {
