@@ -9,27 +9,25 @@ function TestController($scope) {
 		logs.push(message);
 		console.log(message);
 	}
-	//--- counter of game results
-	function initCounter() {
-		resultCounter = { resX: 0, res0: 0, resNone: 0, total: 0};
-	}
     //--- test with recursion
     function testEx(gType) {
         log("--------------")
         log("Test 'user is " + (gType ? "0" : "X") + "' started");
         //---
-        initCounter();
-        //---
+        var resultsCounter = new ResultsCounter();
+        //--- prepare template game
         var initialGame = new Game(gType);
         initialGame.start();
-        step(initialGame);
+        //--- go through steps
+        step(initialGame,resultsCounter);
         //---
-        log("Games tested: " + resultCounter.total + " (crosses won: " + resultCounter.resX + ", noughts won: " + resultCounter.res0 + ", drawn games: " + resultCounter.resNone + ")");
+        var gamesResult = resultsCounter.getResults();
+        log("Games tested: " + gamesResult.total + " (crosses won: " + gamesResult.resX + ", noughts won: " + gamesResult.res0 + ", drawn games: " + gamesResult.resNone + ")");
         //---
-        return gType == Game.gameType.userFirst ? resultCounter.resX : resultCounter.res0;
+        return gType == Game.gameType.userFirst ? gamesResult.resX : gamesResult.res0;
     }
     //--- recursive method to
-    function step(game) {
+    function step(game, resCounter) {
         var emptyPoses = game.getEmptyPositions();
         //--- go through empty posisions
         for(var i=0;i<emptyPoses.length;i++) {
@@ -38,38 +36,46 @@ function TestController($scope) {
             var cycleResult = gameTemp.runCycle(emptyPoses[i]);
             if(cycleResult == null) {
                 //--- enter recursion
-                step(gameTemp);
+                step(gameTemp,resCounter);
             } else {
                 //--- result exists => count it
-                countResult(cycleResult);
+                resCounter.countResult(cycleResult);
             }
         }
     }
-	//---
-	function countResult(result) {
-		if(result != null) {
-			resultCounter.total++;
-			//---
-			switch(result) {
-				case "X":
-				resultCounter.resX++;
-				break;
-				case "0":
-				resultCounter.res0++;
-				break;
-				case "-":
-				resultCounter.resNone++;
-				break;
-				default:
-					throw "unexpected: " + result;
-				break;
-			}
-		}
-	}
 	//--- run tests
 	var userWinsCount = testEx(Game.gameType.userFirst);
     log(userWinsCount > 0 ? "ERROR: matches found where user started with X and won" : "SUCCESS: test passed, crosses have never won");
     //---
     userWinsCount = testEx(Game.gameType.computerFirst);
     log(userWinsCount > 0 ? "ERROR: matches found where computer started with X and lost" : "SUCCESS: test passed, noughts have never won");
+}
+//--- counter for results
+function ResultsCounter() {
+    var resultCounter = { resX: 0, res0: 0, resNone: 0, total: 0};
+    //--- checks and counts results
+    this.countResult = function(result) {
+        if(result != null) {
+            resultCounter.total++;
+            //---
+            switch(result) {
+                case "X":
+                    resultCounter.resX++;
+                    break;
+                case "0":
+                    resultCounter.res0++;
+                    break;
+                case "-":
+                    resultCounter.resNone++;
+                    break;
+                default:
+                    throw "unexpected: " + result;
+                    break;
+            }
+        }
+    };
+    //--- gets results
+    this.getResults = function() {
+        return resultCounter;
+    }
 }
