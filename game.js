@@ -54,9 +54,9 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 			return null;
 		}
 		//--- check is result received
-		var res1 = this.getGameResult();
-		if(res1 != null) {
-			return res1			
+		var resAfterUser = this.getGameResult();
+		if(resAfterUser != null) {
+			return resAfterUser;
 		}
 		//--- computer turn
 		this.computerRun(!gameType);
