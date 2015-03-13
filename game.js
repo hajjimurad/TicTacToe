@@ -5,22 +5,32 @@ Game.sidePositions = [1,3,5,7];
 Game.centralPosition = 4;
 Game.gameType = { userFirst: false, computerFirst: true };
 //---
-function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStrategy, gStates) {
-	//--- game data	
+function Game(gType, snapShot) {
+	//--- game data
 	var gameType = (typeof(gType) ==='undefined') ? Game.gameType.userFirst : gType;
-	var step = (typeof(gStep) ==='undefined') ? 0 : gStep;
-	var firstUserPosition = (typeof(gFirstUserPosition) ==='undefined') ? null : gFirstUserPosition;
-	var prevUserPosition = (typeof(gPrevUserPosition) ==='undefined') ? null : gPrevUserPosition;
-	var computerStrategy = (typeof(gComputerStrategy) ==='undefined') ? null : gComputerStrategy;
-	//---
-	var log = [];
-	//--- deep copy
-	var states = [];
-	if(typeof(gStates) !== 'undefined') {
-		for(var a=0;a<9;a++) {
-			states.push( { state: gStates[a].state });
-		}
-	}
+	var step;
+	var firstUserPosition;
+	var prevUserPosition;
+	var computerStrategy;
+    var states = [];
+    //---
+    var log = [];
+    //---
+    if(typeof(snapShot) == 'undefined') {
+        //--- init new data
+        step = 0;
+        firstUserPosition = null;
+        prevUserPosition = null;
+        computerStrategy = null;
+    } else {
+        //--- copy snapshot data
+        step = snapShot.step;
+        firstUserPosition = snapShot.firstUserPosition;
+        prevUserPosition = snapShot.prevUserPosition;
+        computerStrategy = snapShot.computerStrategy;
+        //-- shallow copy, because snapshot contains deep copy
+        states = snapShot.states.slice();
+    }
  	//---
 	this.start = function() {
 		//--- init states
@@ -34,8 +44,20 @@ function Game(gType, gStep, gFirstUserPosition, gPrevUserPosition, gComputerStra
 	};
 	//---
 	this.clone = function() {
-		return new Game(gameType,step,firstUserPosition,prevUserPosition,computerStrategy,states);
-	};
+        var snapShot = {};
+        //---
+        snapShot.step = step;
+        snapShot.firstUserPosition = firstUserPosition;
+        snapShot.prevUserPosition = prevUserPosition;
+        snapShot.computerStrategy = computerStrategy;
+        snapShot.states = [];
+        //--- deep copy
+        for (var a = 0; a < 9; a++) {
+            snapShot.states.push({state: states[a].state});
+        }
+        //---
+        return new Game(gameType,snapShot);
+    };
 	//---
 	this.getEmptyPositions = function() {
 		var temp = [];
