@@ -4,6 +4,7 @@ Game.anglePositions = [0,2,6,8];
 Game.sidePositions = [1,3,5,7];
 Game.centralPosition = 4;
 Game.gameType = { userFirst: false, computerFirst: true };
+Game.size = 3;
 //---
 function Game(gType, snapShot) {
 	//--- game data
@@ -34,7 +35,7 @@ function Game(gType, snapShot) {
  	//---
 	this.start = function() {
 		//--- init states
-		for(var i=0; i<9; i++) {
+		for(var i=0; i<(Game.size * Game.size); i++) {
 	 		states.push({ state: null });
 	 	}
 		//--- do first step is computer first
@@ -52,7 +53,7 @@ function Game(gType, snapShot) {
         snapShot.computerStrategy = computerStrategy;
         snapShot.states = [];
         //--- deep copy
-        for (var a = 0; a < 9; a++) {
+        for (var a = 0; a < (Game.size * Game.size); a++) {
             snapShot.states.push({state: states[a].state});
         }
         //---
@@ -61,7 +62,7 @@ function Game(gType, snapShot) {
 	//---
 	this.getEmptyPositions = function() {
 		var temp = [];
-		for(var i=0;i<9;i++) {
+		for(var i=0;i<(Game.size * Game.size);i++) {
 			if(states[i].state == null) {
 				temp.push(i);
 			}
@@ -115,7 +116,7 @@ function Game(gType, snapShot) {
 		if(states[index].state != null) 
 			return false;
 		//---
-		isCross = (isCross + 1) % 2;
+		isCross = (isCross + 1) % (Game.size - 1);
 		//---
 		placeTo(index,isCross);
 		//---
@@ -131,9 +132,9 @@ function Game(gType, snapShot) {
 		var chosen = false;
 		var emptyPositions = [];
 		//---
-		isCross = (isCross + 1) % 2;
+		isCross = (isCross + 1) % (Game.size - 1);
 		//--- 'if i can win then win'
-		for(var i=0;i<9;i++) {
+		for(var i=0;i< (Game.size * Game.size);i++) {
 			if(states[i].state == null) {
 				//--- check if computer can win
 				if(ifWin(isCross, i)) {	
@@ -147,8 +148,8 @@ function Game(gType, snapShot) {
 		if(chosen)
 			return;
 		//--- 'if opponent can win at next step then go there'
-		var opponentSymbol = (isCross + 1) % 2;
-		for(i=0;i<9;i++) {
+		var opponentSymbol = (isCross + 1) % (Game.size - 1);
+		for(i=0;i<(Game.size * Game.size);i++) {
 			if(states[i].state == null) {
 				//--- check if opponent can win
 				if(ifWin(opponentSymbol, i)) {
@@ -266,11 +267,11 @@ function Game(gType, snapShot) {
 			if(states[Game.anglePositions[i]].state != null) 
 				continue;
 			//---
-			var x = sourcePosition % 3;
-			var y = (sourcePosition - x) / 3;
+			var x = sourcePosition % Game.size;
+			var y = (sourcePosition - x) / Game.size;
 			//---
-			var xAngle = Game.anglePositions[i] % 3;
-			var yAngle = (Game.anglePositions[i] - xAngle) / 3;
+			var xAngle = Game.anglePositions[i] % Game.size;
+			var yAngle = (Game.anglePositions[i] - xAngle) / Game.size;
 			//---
 			var distance = Math.abs(x - xAngle) + Math.abs(y - yAngle);
 			//---
@@ -316,11 +317,11 @@ function Game(gType, snapShot) {
 		if(sourcePosition == Game.centralPosition) {
 			throw "invalid position specified to get opposite, opposite";
 		}
-		var x = sourcePosition % 3;
-		var y = (sourcePosition - x) / 3;
-		var oppositeX = 2 - x;
-		var oppositeY = 2 - y;
-		return oppositeY * 3 + oppositeX;
+		var x = sourcePosition % Game.size;
+		var y = (sourcePosition - x) / Game.size;
+		var oppositeX = (Game.size - 1) - x;
+		var oppositeY = (Game.size - 1) - y;
+		return oppositeY * Game.size + oppositeX;
 	};
 	var getFirstFreeAtSide = function() {
 		for(var i=0;i<Game.sidePositions.length;i++) {
@@ -339,7 +340,7 @@ function Game(gType, snapShot) {
 		return null;
 	};
 	var getFirstFree = function() {
-		for(var i=0;i<9;i++) {
+		for(var i=0;i<(Game.size * Game.size);i++) {
 			if(states[i].state == null) {
 				return i;
 			}
@@ -366,7 +367,7 @@ function Game(gType, snapShot) {
 	var ifWin = function(isCross,futurePosition) {
 		//--- calculate sum of current elements
 		var tempSum = 0; 
-		for(var i=0;i<9;i++) {
+		for(var i=0;i<(Game.size * Game.size);i++) {
 	 		if(states[i].state == isCross) {
 				tempSum |= Math.pow(2,i);
  			}
@@ -385,7 +386,7 @@ function Game(gType, snapShot) {
 	};
 	//-- checks whether cells with empty data exists
 	var ifNoPlaceToGo = function() {
-		for(var i=0;i<9;i++) {
+		for(var i=0;i<(Game.size * Game.size);i++) {
 	 		if(states[i].state == null) {
 	 			return false;
 	 		}
