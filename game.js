@@ -137,7 +137,7 @@ function Game(gType, snapShot) {
 		for(var i=0;i< (Game.size * Game.size);i++) {
 			if(states[i].state == null) {
 				//--- check if computer can win
-				if(ifWin(isCross, i)) {	
+				if(ifWin(isCross, i)) {
 					placeTo(i,isCross,"computer can win");
 					chosen = true;
 					break;

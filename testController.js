@@ -24,10 +24,10 @@ function TestController($scope) {
         //---
         return gType == Game.gameType.userFirst ? gamesResult.resX : gamesResult.res0;
     }
-    //--- recursive method to
+    //--- recursive method to go through steps
     function step(game, resCounter) {
         var emptyPoses = game.getEmptyPositions();
-        //--- go through empty posisions
+        //--- go through empty positions
         for(var i=0;i<emptyPoses.length;i++) {
             //---
             var gameTemp = game.clone();
