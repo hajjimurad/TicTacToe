@@ -1,3 +1,4 @@
+//--- demo v. 0.0.1
 //--- global constants initialization for 3x3 game
 Game.winSums = [7, 56, 448, 73, 146, 292, 273, 84];
 Game.anglePositions = [0,2,6,8];
